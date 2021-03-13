@@ -1,0 +1,252 @@
+Notes for logical shifts (program1.s)
+
+Initial Values:
+r0 = 10
+r1 = 5
+
+Final values:
+Same as initial. lsr properly reversed lsl.
+
+
+GDB Output:
+Breakpoint 2, ndiv () at program.s:10
+10              mov     r0, r0, lsl r1
+(gdb) info registers
+r0             0xa                 10
+r1             0x5                 5
+r2             0x7efff50c          2130703628
+r3             0x103e0             66528
+r4             0x0                 0
+r5             0x103ec             66540
+r6             0x102e0             66272
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff430          2130703408
+sp             0x7efff3b8          0x7efff3b8
+lr             0x76e6e718          1994843928
+pc             0x103d0             0x103d0 <ndiv>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) cont
+Continuing.
+
+Breakpoint 1, nmul () at program.s:13
+13              mov     r0, r0, lsr r1
+(gdb) info registers
+r0             0x140               320
+r1             0x5                 5
+r2             0x7efff50c          2130703628
+r3             0x103e0             66528
+r4             0x0                 0
+r5             0x103ec             66540
+r6             0x102e0             66272
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff430          2130703408
+sp             0x7efff3b8          0x7efff3b8
+lr             0x76e6e718          1994843928
+pc             0x103d8             0x103d8 <nmul>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) cont
+Continuing.
+
+Breakpoint 3, 0x000103ec in __libc_csu_init ()
+(gdb) info registers
+r0             0xa                 10
+r1             0x5                 5
+r2             0x7efff50c          2130703628
+r3             0x103e0             66528
+r4             0x0                 0
+r5             0x103ec             66540
+r6             0x102e0             66272
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff430          2130703408
+sp             0x7efff3b8          0x7efff3b8
+lr             0x76e6e718          1994843928
+pc             0x103ec             0x103ec <__libc_csu_init>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+
+----------------------------------------------------------------
+
+Arithmetic Shift Notes (program2.s)
+
+Initial Values:
+r0 = 10
+r1 = 2
+
+Final Values:
+r0 = 8
+r1 = 2
+
+The original value of r0 is not preserved due to the nature of arithmetic shifting, although signs are preserved, unlike a logical shift.
+
+GDB Output:
+Breakpoint 2, ndiv () at program2.s:10
+10              mov     r0, r0, ASR r1
+(gdb) info registers
+r0             0xa                 10
+r1             0x2                 2
+r2             0x7efff53c          2130703676
+r3             0x103e0             66528
+r4             0x0                 0
+r5             0x103ec             66540
+r6             0x102e0             66272
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff460          2130703456
+sp             0x7efff3e8          0x7efff3e8
+lr             0x76e6e718          1994843928
+pc             0x103d0             0x103d0 <ndiv>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) cont
+Continuing.
+
+Breakpoint 1, nmul () at program2.s:13
+13              mov     r0, r0, ASL r1
+(gdb) info registers
+r0             0x2                 2
+r1             0x2                 2
+r2             0x7efff53c          2130703676
+r3             0x103e0             66528
+r4             0x0                 0
+r5             0x103ec             66540
+r6             0x102e0             66272
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff460          2130703456
+sp             0x7efff3e8          0x7efff3e8
+lr             0x76e6e718          1994843928
+pc             0x103d8             0x103d8 <nmul>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) cont
+Continuing.
+
+Breakpoint 3, 0x000103ec in __libc_csu_init ()
+(gdb) info registers
+r0             0x8                 8
+r1             0x2                 2
+r2             0x7efff53c          2130703676
+r3             0x103e0             66528
+r4             0x0                 0
+r5             0x103ec             66540
+r6             0x102e0             66272
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff460          2130703456
+sp             0x7efff3e8          0x7efff3e8
+lr             0x76e6e718          1994843928
+pc             0x103ec             0x103ec <__libc_csu_init>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+
+
+----------------------------------------------------------------
+
+Rotate Shift Notes (program3.s)
+
+Since the rotate instruction doesn't have a left rotate, we can just do (32-r1) and do that ROR for the ndiv, then ROR r1 for the nmul.
+
+Initial Values:
+r0 = 10
+r1 = 5
+
+Final Values:
+r0 = 10
+r1 = 5
+
+GDB Output:
+Breakpoint 2, ndiv () at program3.s:10
+10              mov     r2, #32
+(gdb) info registers
+r0             0xa                 10
+r1             0x5                 5
+r2             0x7efff50c          2130703628
+r3             0x103e8             66536
+r4             0x0                 0
+r5             0x103f4             66548
+r6             0x102e0             66272
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff430          2130703408
+sp             0x7efff3b8          0x7efff3b8
+lr             0x76e6e718          1994843928
+pc             0x103d0             0x103d0 <ndiv>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) cont
+Continuing.
+
+Breakpoint 1, nmul () at program3.s:15
+15              mov     r0, r0, ROR r1
+(gdb) info registers
+r0             0x140               320
+r1             0x5                 5
+r2             0x1b                27
+r3             0x103e8             66536
+r4             0x0                 0
+r5             0x103f4             66548
+r6             0x102e0             66272
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff430          2130703408
+sp             0x7efff3b8          0x7efff3b8
+lr             0x76e6e718          1994843928
+pc             0x103e0             0x103e0 <nmul>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) cont
+Continuing.
+
+Breakpoint 3, 0x000103f4 in __libc_csu_init ()
+(gdb) info registers
+r0             0xa                 10
+r1             0x5                 5
+r2             0x1b                27
+r3             0x103e8             66536
+r4             0x0                 0
+r5             0x103f4             66548
+r6             0x102e0             66272
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff430          2130703408
+sp             0x7efff3b8          0x7efff3b8
+lr             0x76e6e718          1994843928
+pc             0x103f4             0x103f4 <__libc_csu_init>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+
+--------------------------------------------------------------
+
+As far as fixed point numbers the only shift where the value is retained after reversing is ROR because the data is preserved because values don't "drop off". On Arithmetic shifts, you are able to respect the sign of an integer unlike on a logical shift. Additionally on arithmetic shifts you don't necissarily preserve the original value depending on the original value and the amount shifted by.

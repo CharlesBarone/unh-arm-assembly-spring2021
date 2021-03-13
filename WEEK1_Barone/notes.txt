@@ -1,0 +1,5 @@
+helloworld.s has 42 lines
+
+./helloworld Output:
+HelloWorld!
+HelloWorld!000
