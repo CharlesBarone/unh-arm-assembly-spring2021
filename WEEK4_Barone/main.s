@@ -22,12 +22,9 @@ uio:
 	bl	read
 	pop	{pc}
 
-asc2hexWhole:
+asc2hex:
 	push	{lr}
-	mov	r8, #0		@ Counter
-	mov	r5, #0		@ Q8.2 Signed Whole Part
-	
-	mov	r6, #3		@ Whole Number length
+	mov	r5, #0		@ Out Number
 loop:
 	cmp	r8, r6		@ Loop until end of string
 	beq	endloop		@ Branch to end of loop
@@ -66,38 +63,6 @@ endpow:
 	mul	r3, r3, r1
 	pop	{pc}
 
-asc2hexFrac:
-	push	{lr}
-	mov	r8, #4		@ Counter (Start at Frac not Whole, thus not 0)
-	mov	r5, #0		@ Q8.2 Signed Frac Part
-	
-	mov	r6, #6		@ Frac Number Len + 4 (Ignore XXX.)
-loopFrac:
-	cmp	r8, r6		@ Loop until end of string
-	beq	endFrac		@ Branch to end of fractional component
-
-	ldr	r0, =inbuff	@ Load r0 with buffer
-	ldrb	r1, [r0,r8]	@ Load r1 with ascii value
-	ldr	r2, =#0x40
-	cmp	r1, r2		@ If A to F
-	bgt	AtoFFrac
-	b	numFrac
-AtoFFrac:
-	sub	r1, r1, #7
-numFrac:
-	sub	r1, r1, #48	@ acii to hex for single digit
-	sub	r2, r6, r8	@ Get power
-	sub	r2, r2, #5	@ ^ Continued (1 + frac offset(4))
-	ldr	r1, =#16
-	mov	r3, #1
-	bl	power
-	
-	add	r5, r5, r3
-	add	r8, r8, #1
-	b	loopFrac
-endFrac:
-	pop	{pc}
-
 fracPrecision:
 	push	{lr}
 	mov	r1, #0		@ r0 = #0
@@ -121,10 +86,14 @@ zero:
 
 main:
 	bl	uio
-	bl	asc2hexWhole	@ Returns Whole number part in r5	
+	mov	r8, #0		@ Counter
+	mov	r6, #3		@ Whole Length
+	bl	asc2hex		@ Returns Whole number part in r5	
 	mov	r0, r5, lsl #2	@ Shift whole part to correct bits for Q8.2 and store in r0
 	push	{r0}
-	bl	asc2hexFrac	@ Returns Fractional number part in r7
+	mov	r8, #4		@ Counter
+	mov	r6, #6		@ Fractional Length
+	bl	asc2hex		@ Returns Fractional number part in r5
 	bl	fracPrecision	@ Returns 2 bit Fractional part in r1
 	pop	{r0}
 	add	r0, r0, r1	@ Combine whole and fractional numbers to make Q8.2 Number
