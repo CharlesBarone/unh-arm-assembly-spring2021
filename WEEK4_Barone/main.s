@@ -7,7 +7,6 @@ prompt:
 	.asciz "Please Enter (Include Sign) (XXX.XX) >>"
 
 	.align
-
 terminate:
 	mov	r0, #0
 	mov	r7, #1
@@ -26,7 +25,7 @@ uio:
 asc2hexWhole:
 	push	{lr}
 	mov	r8, #0		@ Counter
-	mov	r5, #0		@ Q8.2 Signed
+	mov	r5, #0		@ Q8.2 Signed Whole Part
 	
 	mov	r6, #3		@ Whole Number length
 loop:
@@ -35,7 +34,7 @@ loop:
 	
 	ldr	r0, =inbuff	@ Load r0 with buffer
 	ldrb	r1, [r0,r8]	@ Load r1 with ascii value
-	mov	r2, #0x40
+	ldr	r2, =#0x40
 	cmp	r1, r2		@ If A through F
 	bgt	AtoF
 	b	num
@@ -45,7 +44,7 @@ num:
 	sub	r1, r1, #48	@ ascii to hex for single digit
 	sub	r2, r6, r8	@ Get Power
 	sub	r2, r2, #1	@ ^ Continued
-	mov	r4, #16
+	ldr	r4, =#16
 	mov	r3, #1
 	bl	power
 
@@ -57,25 +56,81 @@ endloop:
 
 power:
 	push	{lr}
+pow:
 	cmp	r2, #0
 	beq	endpow
 	mul	r3, r3, r4
 	sub	r2, r2, #1
-	b	power
+	b	pow
 endpow:
 	mul	r3, r3, r1
 	pop	{pc}
 
 asc2hexFrac:
 	push	{lr}
+	mov	r8, #4		@ Counter (Start at Frac not Whole, thus not 0)
+	mov	r5, #0		@ Q8.2 Signed Frac Part
 	
+	mov	r6, #6		@ Frac Number Len + 4 (Ignore XXX.)
+loopFrac:
+	cmp	r8, r6		@ Loop until end of string
+	beq	endFrac		@ Branch to end of fractional component
+
+	ldr	r0, =inbuff	@ Load r0 with buffer
+	ldrb	r1, [r0,r8]	@ Load r1 with ascii value
+	ldr	r2, =#0x40
+	cmp	r1, r2		@ If A to F
+	bgt	AtoFFrac
+	b	numFrac
+AtoFFrac:
+	sub	r1, r1, #7
+numFrac:
+	sub	r1, r1, #48	@ acii to hex for single digit
+	sub	r2, r6, r8	@ Get power
+	sub	r2, r2, #5	@ ^ Continued (1 + frac offset(4))
+	ldr	r1, =#16
+	mov	r3, #1
+	bl	power
 	
+	add	r5, r5, r3
+	add	r8, r8, #1
+	b	loopFrac
+endFrac:
+	pop	{pc}
+
+fracPrecision:
+	push	{lr}
+	mov	r1, #0		@ r0 = #0
 	
+	cmp	r5, #25		@ If < 1/4
+	blt	zero
+	
+	cmp	r5, #50		@ If < 1/2
+	blt	quarter
+
+	cmp	r5, #75		@ If < 3/4
+	blt	half
+
+	add	r1, r1, #1
+half:
+	add	r1, r1, #1
+quarter:
+	add	r1, r1, #1
+zero:
 	pop	{pc}
 
 main:
 	bl	uio
-	bl	asc2hexWhole
+	bl	asc2hexWhole	@ Returns Whole number part in r5	
+	mov	r0, r5, lsl #2	@ Shift whole part to correct bits for Q8.2 and store in r0
+	push	{r0}
+	bl	asc2hexFrac	@ Returns Fractional number part in r7
+	bl	fracPrecision	@ Returns 2 bit Fractional part in r1
+	pop	{r0}
+	add	r0, r0, r1	@ Combine whole and fractional numbers to make Q8.2 Number
+				@ Fix sign
+
+
 	bl	terminate
 
 	.data
