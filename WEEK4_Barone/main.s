@@ -4,7 +4,7 @@
 	.text
 
 prompt:
-	.asciz "Please Enter (Include Sign) (XXX.XX) >>"
+	.asciz "Please Enter (Include Sign +/-) (XXX.XX) >>"
 
 	.align
 terminate:
@@ -84,21 +84,33 @@ quarter:
 zero:
 	pop	{pc}
 
+getSign:
+	push	{lr}
+	ldr	r2, =inbuff
+	ldrb	r3, [r2,#0]	@ Load r3 with ascii value of sign
+	cmp	r3, #43		@ If sign is + do nothing
+	beq	positive
+	ldr	r1, =#0x200	@ Set sign to -
+positive:
+	pop	{pc}
+
+
 main:
 	bl	uio
-	mov	r8, #0		@ Counter
-	mov	r6, #3		@ Whole Length
+	mov	r8, #1		@ Counter
+	mov	r6, #4		@ Whole Length
 	bl	asc2hex		@ Returns Whole number part in r5	
 	mov	r0, r5, lsl #2	@ Shift whole part to correct bits for Q8.2 and store in r0
 	push	{r0}
-	mov	r8, #4		@ Counter
-	mov	r6, #6		@ Fractional Length
+	mov	r8, #5		@ Counter
+	mov	r6, #7		@ Fractional Length
 	bl	asc2hex		@ Returns Fractional number part in r5
 	bl	fracPrecision	@ Returns 2 bit Fractional part in r1
 	pop	{r0}
 	add	r0, r0, r1	@ Combine whole and fractional numbers to make Q8.2 Number
-				@ Fix sign
-
+	bl	getSign		@ Get Sign and store into r1
+	add	r0, r0, r1
+	
 
 	bl	terminate
 
