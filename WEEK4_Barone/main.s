@@ -94,6 +94,66 @@ getSign:
 positive:
 	pop	{pc}
 
+hex2dec:
+	push	{lr}
+	ldr	r6, =outbuff
+	and	r1, r0, #0x200	@Get Sign bit
+	cmp	r1, #0x200
+	beq	neg
+	ldr	r1, =#0x2B	@ Load ascii +
+	b	skipneg
+neg:
+	ldr	r1, =#0x2D	@ Load ascii -
+skipneg:
+	strb	r1, [r6]	@ Store sign in ascii
+	push	{r0}
+	mov	r0, r0, lsr #2	@ Remove Fractional Bits
+	and	r0, r0, #0x7F	@ Remove Sign Bit
+	
+	mov	r1, #100
+	bl	modN		@ Get 100s place
+	ldr	r7, [r6]
+	add	r1, #0x30	@ To ascii
+	lsl	r1, #8		@ Rotate 8 positions to left
+	orr	r1, r7		@ or in 100s place
+	str	r1, [r6]
+	
+	mov	r1, #10
+	bl	modN		@ Get 10s place
+	add	r1, #0x30	@ To ascii
+	lsl	r1, #16		@ Rotate 16 positions to left
+	ldr	r7, [r6]
+	orr	r1, r7		@ or in 10s place
+	str	r1, [r6]
+
+	add	r0, #0x30	@ Remainder is 1s place, convert to ascii
+	lsl	r0, #24		@ Rotate 24 positions to left
+	ldr	r7, [r6]
+	orr	r0, r7		@ or in 1s place
+	str	r0, [r6]
+	
+	pop	{r0}
+	@ Add Decimal place then handle fractional part
+	ldr	r0, =outbuff
+	bl	puts
+	pop	{pc}
+
+modN:
+	push	{lr}
+	mov	r3, #0
+cont:
+	sub	r0, r1
+	add	r3, #1
+	cmp	r0, #0
+	bgt	cont
+	cmp	r0, #0
+	beq	modDone
+	add	r0, r1
+	sub	r3, #1
+modDone:
+	mov	r1, r3
+	pop	{pc}
+
 
 main:
 	bl	uio
@@ -110,13 +170,16 @@ main:
 	add	r0, r0, r1	@ Combine whole and fractional numbers to make Q8.2 Number
 	bl	getSign		@ Get Sign and store into r1
 	add	r0, r0, r1
-	
-
+	bl	hex2dec		@ Convert signed hex Q8.2 number in r0 to decimal ascii value and print
 	bl	terminate
 
 	.data
 inbuff:
 	.space	20
 	.equ	inbuffLen, (.-inbuff)
+
+outbuff:
+	.space 20
+	.equ	outbuffLen, (.-outbuff)
 
 	.end
