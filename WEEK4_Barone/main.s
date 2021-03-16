@@ -132,8 +132,39 @@ skipneg:
 	orr	r0, r7		@ or in 1s place
 	str	r0, [r6]
 	
+	ldr	r0, =#0x2E	@ Load '.' into r0
+	str	r0, [r6,#4]
+
 	pop	{r0}
-	@ Add Decimal place then handle fractional part
+	and	r0, #3		@ Keep only fractional part
+	cmp	r0, #0
+	beq	zero2
+	cmp	r0, #1
+	beq	quarter2
+	cmp	r0, #2
+	beq	half2
+	ldr	r0, =#0x37
+	str	r0, [r6,#5]
+	ldr	r0, =#0x35
+	str	r0, [r6,#6]
+	b	decDone	
+zero2:
+	ldr	r0, =#0x30
+	str	r0, [r6,#5]
+	str	r0, [r6,#6]
+	b	decDone
+quarter2:
+	ldr	r0, =#0x32
+	str	r0, [r6,#5]
+	ldr	r0, =#0x35
+	str	r0, [r6,#6]
+	b	decDone
+half2:
+	ldr	r0, =#0x35
+	str	r0, [r6,#5]
+	ldr	r0, =#0x30
+	str	r0, [r6,#6]
+decDone:	
 	ldr	r0, =outbuff
 	bl	puts
 	pop	{pc}
