@@ -1,3 +1,13 @@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@
+@	Assembly Week 4 Program
+@	Charles Barone		3/15/2021
+@	Takes an input of a signed Q8.2 fixed point number
+@	in hex, then stores it into a register, 
+@	then prints it to console as a decimal number.
+@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 	.global main
 	.equ	STDIN, 0
 	.equ	STDOUT, 1
