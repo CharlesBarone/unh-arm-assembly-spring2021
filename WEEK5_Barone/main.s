@@ -47,13 +47,15 @@ fifoPop:
 	beq	skip		@ Nothing to remove from queue
 	
 	ldr	r0, [r4]	@ Get return value
+	push	{r0}
 	mov	r1, #4		@ Counter
 	mov	r4, r3		@ temp lead pointer
 loop:
 	cmp	r1, #40		@ Check if reached end of memory space
 	beq	endLoop
 	add	r2, r1, r4	@ Get temp pointer
-	str	[r2], [r3]	@ Move value up in queue
+	ldr	r0, [r2]	@ Get value to move
+	str	r0, [r3]	@ Move value up in queue
 	mov	r3, r2		@ Get new temp lead pointer
 	add	r2, #4		@ Increment temp pointer 
 	add	r1, #4		@ Increment counter
@@ -62,6 +64,7 @@ endLoop:
 	mov	r1, #0		@ Store #0 in r1
 	str	r1, [r4,#36]	@ Zero out newly opened queue slot
 skip:
+	pop	{r0}
 	pop	{pc}
 
 @ Returns 0 if queue is empty, 1 if it is not empty.
@@ -78,11 +81,24 @@ true:
 	pop	{pc}
 
 main:
-	bl	fifoInit
-	
-	
-	
-	bl	terminate
+	mov	r6, #0		@ Number to push/pop and increment
+mainLoop:
+	cmp	r6, #10		@ If r6 == 10
+	beq	finish
+	mov	r0, r6		@ Store number into r0 to be pushed to queue
+	bl	fifoPush
+	add	r6, #1		@ r6++
+	b	mainLoop
+finish:
+	mov	r6, #0
+mainLoop2:
+	cmp	r6, #10		@ If r6 == 10
+	beq	finish2
+	bl	fifoPop
+	add	r6, #1		@ r6++
+	b	mainLoop2
+finish2:
+	b	terminate
 
 	.data
 fifo:
