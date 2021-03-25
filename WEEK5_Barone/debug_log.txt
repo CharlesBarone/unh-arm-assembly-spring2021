@@ -1,0 +1,272 @@
+(gdb) b 96
+Breakpoint 1 at 0x10490: file main.s, line 96.
+(gdb) b 101
+Breakpoint 2 at 0x104a0: file main.s, line 101.
+(gdb) r
+Starting program: /home/pi/assembly/unh-arm-assembly-spring2021/WEEK5_Barone/main.out 
+
+Breakpoint 1, endInsert () at main.s:96
+96              mov     r1, #10                 @ Counter
+(gdb) i r
+r0             0x0                 0
+r1             0x7efff4c4          2130703556
+r2             0x28                40
+r3             0x21024             135204
+r4             0x2104c             135244
+r5             0x2104c             135244
+r6             0x102e0             66272
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff3f0          2130703344
+sp             0x7efff378          0x7efff378
+lr             0x10488             66696
+pc             0x10490             0x10490 <endInsert>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) c
+Continuing.
+
+Breakpoint 2, remove () at main.s:101
+101             sub     r1, #1                  @ r1--
+(gdb) i r
+r0             0xa                 10
+r1             0xa                 10
+r2             0x24                36
+r3             0x21024             135204
+r4             0x2104c             135244
+r5             0xa                 10
+r6             0xa                 10
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff3f0          2130703344
+sp             0x7efff378          0x7efff378
+lr             0x104a0             66720
+pc             0x104a0             0x104a0 <remove+12>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) c
+Continuing.
+
+Breakpoint 2, remove () at main.s:101
+101             sub     r1, #1                  @ r1--
+(gdb) i r
+r0             0x9                 9
+r1             0x9                 9
+r2             0x20                32
+r3             0x21024             135204
+r4             0x2104c             135244
+r5             0x9                 9
+r6             0x9                 9
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff3f0          2130703344
+sp             0x7efff378          0x7efff378
+lr             0x104a0             66720
+pc             0x104a0             0x104a0 <remove+12>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) c
+Continuing.
+
+Breakpoint 2, remove () at main.s:101
+101             sub     r1, #1                  @ r1--
+(gdb) i r
+r0             0x8                 8
+r1             0x8                 8
+r2             0x1c                28
+r3             0x21024             135204
+r4             0x2104c             135244
+r5             0x8                 8
+r6             0x8                 8
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff3f0          2130703344
+sp             0x7efff378          0x7efff378
+lr             0x104a0             66720
+pc             0x104a0             0x104a0 <remove+12>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) c
+Continuing.
+
+Breakpoint 2, remove () at main.s:101
+101             sub     r1, #1                  @ r1--
+(gdb) i r
+r0             0x7                 7
+r1             0x7                 7
+r2             0x18                24
+r3             0x21024             135204
+r4             0x2104c             135244
+r5             0x7                 7
+r6             0x7                 7
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff3f0          2130703344
+sp             0x7efff378          0x7efff378
+lr             0x104a0             66720
+pc             0x104a0             0x104a0 <remove+12>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) c
+Continuing.
+
+Breakpoint 2, remove () at main.s:101
+101             sub     r1, #1                  @ r1--
+(gdb) i r
+r0             0x6                 6
+r1             0x6                 6
+r2             0x14                20
+r3             0x21024             135204
+r4             0x2104c             135244
+r5             0x6                 6
+r6             0x6                 6
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff3f0          2130703344
+sp             0x7efff378          0x7efff378
+lr             0x104a0             66720
+pc             0x104a0             0x104a0 <remove+12>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) c
+Continuing.
+
+Breakpoint 2, remove () at main.s:101
+101             sub     r1, #1                  @ r1--
+(gdb) i r
+r0             0x5                 5
+r1             0x5                 5
+r2             0x10                16
+r3             0x21024             135204
+r4             0x2104c             135244
+r5             0x5                 5
+r6             0x5                 5
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff3f0          2130703344
+sp             0x7efff378          0x7efff378
+lr             0x104a0             66720
+pc             0x104a0             0x104a0 <remove+12>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) c
+Continuing.
+
+Breakpoint 2, remove () at main.s:101
+101             sub     r1, #1                  @ r1--
+(gdb) i r
+r0             0x4                 4
+r1             0x4                 4
+r2             0xc                 12
+r3             0x21024             135204
+r4             0x2104c             135244
+r5             0x4                 4
+r6             0x4                 4
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff3f0          2130703344
+sp             0x7efff378          0x7efff378
+lr             0x104a0             66720
+pc             0x104a0             0x104a0 <remove+12>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) c
+Continuing.
+
+Breakpoint 2, remove () at main.s:101
+101             sub     r1, #1                  @ r1--
+(gdb) i r
+r0             0x3                 3
+r1             0x3                 3
+r2             0x8                 8
+r3             0x21024             135204
+r4             0x2104c             135244
+r5             0x3                 3
+r6             0x3                 3
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff3f0          2130703344
+sp             0x7efff378          0x7efff378
+lr             0x104a0             66720
+pc             0x104a0             0x104a0 <remove+12>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) c
+Continuing.
+
+Breakpoint 2, remove () at main.s:101
+101             sub     r1, #1                  @ r1--
+(gdb) i r
+r0             0x2                 2
+r1             0x2                 2
+r2             0x4                 4
+r3             0x21024             135204
+r4             0x2104c             135244
+r5             0x2                 2
+r6             0x2                 2
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff3f0          2130703344
+sp             0x7efff378          0x7efff378
+lr             0x104a0             66720
+pc             0x104a0             0x104a0 <remove+12>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) c
+Continuing.
+
+Breakpoint 2, remove () at main.s:101
+101             sub     r1, #1                  @ r1--
+(gdb) i r
+r0             0x1                 1
+r1             0x1                 1
+r2             0x0                 0
+r3             0x21024             135204
+r4             0x2104c             135244
+r5             0x1                 1
+r6             0x1                 1
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x7efff3f0          2130703344
+sp             0x7efff378          0x7efff378
+lr             0x104a0             66720
+pc             0x104a0             0x104a0 <remove+12>
+cpsr           0x60000010          1610612752
+fpscr          0x0                 0
+(gdb) c
+Continuing.
+[Inferior 1 (process 1186) exited normally]
+(gdb) quit

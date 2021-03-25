@@ -1,0 +1,7 @@
+Approach: I created 3 functions, fifoInit, fifoPush, and fifoPop. fifoPush works by advancing the tail pointer right by one word and then storing a 32bit word from r0 into that address. fifoPop works by essentially shifting each word in the fifo to the left by 1 word in the memory space with the exception of the left most one which is returned in r0.
+
+To test the data struture, I initialy hard coded in 3 pushes then 3 pops with the length set to 2 words which allowed me to test the empty and full checks in addition to the push and pop quickly and easily.
+
+The main issue I ran into was overcomplicating the implementation. I decded to completely rewrite the code and that time it actually worked on the first try!
+
+A test in gdb is included in "debug_output.txt" with breakpoints set at lines 96 and 101. r0 should equal 0 at the first break point then count down from 10 to 1 for the rest of the break points, which it does, meaning the fifo works as expected.
