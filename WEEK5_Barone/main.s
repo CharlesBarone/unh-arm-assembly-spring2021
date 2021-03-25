@@ -30,7 +30,7 @@ fifoPush:
 	ldr	r5, =tailPtr		@ Get tail pointer increment amount pointer
 	ldr	r2, [r5]		@ Get value of tail pointer increment
 	
-	cmp	r2, #12			@ If fifo is full skip push TODO: Change to 44 from 12
+	cmp	r2, #44			@ If fifo is full skip push TODO: Change to 44 from 12
 	beq	noPush
 	str	r0, [r3, r2]		@ Store 32 bit word argument into headptr + tail increment amount
 	add	r2, #4			@ Increment tail pointer increment by 1 word
@@ -82,14 +82,26 @@ terminate:
 
 @ Program entry point
 main:
-	bl	fifoInit
-	mov	r0, #4
+	bl	fifoInit		@ Initialize fifo
+
+	mov	r0, #10			@ Counter
+insert:
+	cmp	r0, #0			@ If r0 == 0, end insert
+	beq	endInsert
 	bl	fifoPush
-	mov	r0, #3
-	bl	fifoPush
-	bl	fifoPop
-	bl	fifoPop
-	b	terminate
+	sub	r0, #1			@ r0--
+	b	insert			@ Unconditional branch to insert
+endInsert:
+
+	mov	r1, #10			@ Counter
+remove:
+	cmp	r1, #0			@ If r1 == 0, end remove
+	beq	endrm
+	bl	fifoPop			@ Pop word off fifo into r0
+	sub	r1, #1			@ r1--
+	b	remove			@ Unconditional branch to remove
+endrm:
+	b	terminate		@ Terminate program
 
 
 	.data
