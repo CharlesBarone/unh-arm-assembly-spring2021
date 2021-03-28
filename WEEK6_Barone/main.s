@@ -85,7 +85,7 @@ incrementPtr:
 	mov	r0, r3		@ Move pointer into r0
 	add	r0, #4		@ Increment pointer by 1 word
 	bl	modN		@ Run modN
-	mov	r3, r1		@ Move new pointer back to r3
+	mov	r3, r0		@ Move new pointer back to r3
 	pop	{r0-r1}
 	pop	{pc}
 
@@ -112,14 +112,28 @@ noRead:
 @ Program entry point
 main:
 	bl	ringInit
+	mov	r0, #10
+insert:
+	cmp	r0, #0
+	beq	endInsert
+	bl	bufWrite
+	sub	r0, #1
+endInsert:
 
-
+	mov	r1, #10
+remove:
+	cmp	r1, #0
+	beq	endrm
+	bl	bufRead
+	sub	r1, #1
+	b	remove
+endrm:
 	b	terminate
 
 	.data
 ring:
 	.space	40
-	.equ	ringLen, (.-fifo)
+	.equ	ringLen, (.-ring)
 
 writePtr:
 	.space 8
