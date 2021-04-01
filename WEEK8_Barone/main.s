@@ -7,19 +7,22 @@
 @
 @
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-	
+	.cpu    cortex-a53
+        .fpu    neon-fp-armv8
+	.syntax	unified
 	.text
 	.align 	2
 	.global main
 terminate:
-	mov	r0, #0
-	mov	r7, #1
-	swi	0
+	mov		r0, 0
+	mov		r7, 1
+	swi		0
 
 main:
-	vldr	s0, =x		@ Load float x into s0
-	vmov	r0, s0		@ Pass x into r0
-	b	terminate
+	vldr		s0, x		@ Load float x into s0
+	
+	vmov.f32	r0, s0		@ Pass x into r0
+	b		terminate
 
 	.data
 x:

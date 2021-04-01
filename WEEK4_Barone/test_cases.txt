@@ -1,0 +1,12 @@
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK4_Barone $ ./main.out
+Please Enter (Include Sign +/-) (XXX.XX) >>
++07F.19
++127.50
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK4_Barone $ ./main.out
+Please Enter (Include Sign +/-) (XXX.XX) >>
+-05A.00
+-090.00
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK4_Barone $ ./main.out
+Please Enter (Include Sign +/-) (XXX.XX) >>
++000.00 
++000.00

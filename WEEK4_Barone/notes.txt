@@ -1,0 +1,4 @@
+My code takes a sign hex Q8.2 number as input and ouputs it as decimal number.
+
+The main issue I had was with the handling of the fractional bits in the conversions.
+To resolve these issues I eventually used hard coded "if" ranges to determine it due to the small number of values possible in a 2 bit fractional number.
