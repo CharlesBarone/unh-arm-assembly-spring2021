@@ -1,0 +1,97 @@
+------------------------------------------------------------------------------------
+Valid Commands to test:
+A0,
+B1,q
+B2,qw
+B3,qwe
+B10,qwertyuiop
+------------------------------------------------------------------------------------
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+A0,
+Command entered was valid!
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+B1,q
+Command entered was valid!
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+B2,qw
+Command entered was valid!
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+B3,qwe
+Command entered was valid!
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+B10,qwertyuiop
+Command entered was valid!
+------------------------------------------------------------------------------------
+Invalid Commands to test:
+Invalid Command (Something other than A/B)
+W2,as
+
+Completely wrong command
+asdf
+
+Missing size terminator
+A0
+B3abc
+
+Premeture LF on B command
+B3,ab
+
+Payload longer than size
+B2,qwe
+
+No size:
+B,12
+
+Missing size and size terminator
+Basd
+
+Only Command
+A
+B
+------------------------------------------------------------------------------------
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+W2,as
+Command entered was invalid!
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+asdf
+Command entered was invalid!
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+A0
+Command entered was invalid!
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+B3abc
+Command entered was invalid!
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+B3,ab
+Command entered was invalid!
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+B2,qwe
+Command entered was invalid!
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+B,12
+Command entered was invalid!
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+Basd
+Command entered was invalid!
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+A
+Command entered was invalid!
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK7_Barone $ ./main.out
+Please enter a command >>
+B
+Command entered was invalid!
+------------------------------------------------------------------------------------

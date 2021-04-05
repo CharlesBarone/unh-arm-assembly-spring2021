@@ -1,0 +1,11 @@
+Since my console does not print the ACK and NAK characters, I implemented generic valid and invalid messages that print with puts.
+
+My test cases are detailed in debug_tests.txt, this also includes the outputs from these tests.
+
+The assignment said to end the commands with CRLF, I ended them with just LF because my system does not include CR in the line endings when getting user input using read().
+
+I also implemented a terminator into the size part of the command which was ",". This was not explicitly mentioned in the instructions, but I opted to include it as the input is a string and I needed some way to terminate the size string to separate it from the payload string. I would have used the standard null terminator "\0", but a user cannot type this on a keyboard.
+
+The only real problem I ran into in this program was a seg fault that was caused when a user forgets to include a "," in the command, I resolved this issue by checking if the counter that incremented the read pointer exceeded the size of the string RxBuff that was found using strlen().
+
+Per the instructions, I would recommend that the Tx and Rx buffers be implemented in a fifo data structure. This would be done by putting each command input and ouput as individual elements in two queues. This is assuming we are operating on a synchronous system, not an asynchronous one, meaning all commands are completed in order thus keeping the outputs in order in the output fifo structure relative to the input fifo structure. 
