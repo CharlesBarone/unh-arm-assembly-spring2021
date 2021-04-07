@@ -1,1 +1,23 @@
-The floating point number I picked was 85.125. From gdb I found the register to be holding the value
+The floating point number I picked was 85.125. From gdb I found the register to be holding the value 0x42AA4000.
+
+This value in binary converts to 01000010101010100100000000000000.
+
+This breaks down as follows:
+
+Sign: 0
+Exponent: 10000101
+Mantissa: 01010100100000000000000
+
+So essentially this splits up as 0 10000101 01010100100000000000000 which is in IEEE 754 Single precision format.
+
+85 = 1010101
+0.125 = 001
+85.125 = 1010101.001
+Which also equals 1.010101001 * 2^6
+
+The sign is 0 because it is positive.
+
+127 + 6 = 133
+133 = 10000101 <-- Exponent
+
+The normalized mantissa would be 010101001, which has 0s appended to it to make it 23 bits.

@@ -1,0 +1,3 @@
+I tested my code by creating a loop that fills the ring buffer and attempts to add 1 additonal entry.
+
+Then I read through the entire buffer with another loop which showed that it works correctly.

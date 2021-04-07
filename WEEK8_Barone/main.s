@@ -19,9 +19,10 @@ terminate:
 	swi		0
 
 main:
-	vldr		s0, x		@ Load float x into s0
+	ldr		r1, =x		@ Load r1 with the address of x
+	vldr		s0, [r1]	@ Load value of float x into s0
 	
-	vmov.f32	r0, s0		@ Pass x into r0
+	vmov.f32	r0, s0		@ Pass value of x into r0
 	b		terminate
 
 	.data

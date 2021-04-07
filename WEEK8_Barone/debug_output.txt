@@ -1,12 +1,17 @@
-Breakpoint 1, main () at main.s:21
-21              vmov    r0, s0          @ Pass x into r0
+(gdb) b 22
+Breakpoint 1 at 0x103e0: file main.s, line 23.
+(gdb) r
+Starting program: /home/pi/assembly/unh-arm-assembly-spring2021/WEEK8_Barone/main.out 
+
+Breakpoint 1, main () at main.s:23
+23              vldr            s0, [r1]        @ Load value of float x into s0
 (gdb) i r
 r0             0x1                 1
-r1             0x7efff4c4          2130703556
+r1             0x21024             135204
 r2             0x7efff4cc          2130703564
 r3             0x103dc             66524
 r4             0x0                 0
-r5             0x103ec             66540
+r5             0x103f0             66544
 r6             0x102e0             66272
 r7             0x0                 0
 r8             0x0                 0
@@ -20,14 +25,16 @@ pc             0x103e0             0x103e0 <main+4>
 cpsr           0x60000010          1610612752
 fpscr          0x0                 0
 (gdb) s
-22              b       terminate
+25              vmov.f32        r0, s0          @ Pass value of x into r0
+(gdb) s
+26              b               terminate
 (gdb) i r
-r0             0x21024             135204
-r1             0x7efff4c4          2130703556
+r0             0x42aa4000          1118453760
+r1             0x21024             135204
 r2             0x7efff4cc          2130703564
 r3             0x103dc             66524
 r4             0x0                 0
-r5             0x103ec             66540
+r5             0x103f0             66544
 r6             0x102e0             66272
 r7             0x0                 0
 r8             0x0                 0
@@ -37,10 +44,10 @@ r11            0x0                 0
 r12            0x7efff3f0          2130703344
 sp             0x7efff378          0x7efff378
 lr             0x76e6e718          1994843928
-pc             0x103e4             0x103e4 <main+8>
+pc             0x103e8             0x103e8 <main+12>
 cpsr           0x60000010          1610612752
 fpscr          0x0                 0
 (gdb) c
 Continuing.
-[Inferior 1 (process 6277) exited normally]
-(gdb) q
+[Inferior 1 (process 895) exited normally]
+(gdb)
