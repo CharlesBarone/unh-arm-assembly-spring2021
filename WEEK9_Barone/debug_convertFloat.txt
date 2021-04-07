@@ -1,0 +1,30 @@
+(gdb) b 24
+Breakpoint 1 at 0x10474: file main.s, line 24.
+(gdb) r
+Starting program: /home/pi/assembly/unh-arm-assembly-spring2021/WEEK9_Barone/main.out 
+Please input a number in degrees from 0.00 to 360.00 >>
+123.12
+
+Breakpoint 1, main () at main.s:24
+warning: Source file is more recent than executable.
+24              bl      printFloat
+(gdb) i r
+r0             0x42f63d72          1123433842
+r1             0x21036             135222
+r2             0x14                20
+r3             0x0                 0
+r4             0x0                 0
+r5             0x10550             66896
+r6             0x10344             66372
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x76fff000          1996484608
+r11            0x0                 0
+r12            0x6c                108
+sp             0x7efff398          0x7efff398
+lr             0x10474             66676
+pc             0x10474             0x10474 <main+8>
+cpsr           0x60000010          1610612752
+fpscr          0x10                16
+(gdb)

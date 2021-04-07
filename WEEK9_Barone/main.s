@@ -17,6 +17,15 @@
 prompt:
 	.asciz	"Please input a number in degrees from 0.00 to 360.00 >>"
 
+digits:
+	.ascii "0123456789"
+
+minus:
+	.ascii "-"
+
+nl:
+	.asciz "\n"
+
 	.align
 main:
 	bl	uio
@@ -74,8 +83,9 @@ notDigit:
 	vcvt.f32.s32	s0, s3		@ Convert significant to floating point
 	subs		r2, #1		@ Decrement num of decimal places
 	blt		copy2r0		@ If none, go to copy "whole" float
-
-	vldr		s1, point1	@ Load 0.1 into floating point reg
+	
+	ldr		r6, =point1	@ Load r6 with address of point1
+	vldr		s1, [r6]	@ Load 0.1 into floating point reg
 	beq		combine		@ For 1 decimal place, multiply significant time 0.1
 
 	vmov		s2, s1		@ Extra copy of 0.1 needed for mult loop
@@ -96,8 +106,8 @@ copy2r0:
 	pop		{pc}
 
 @ Computes the sine of a float
-@
-@
+@ Args:
+@ r0 - floating point number
 sine:
 	push	{lr}
 
@@ -106,20 +116,142 @@ sine:
 
 	pop	{pc}
 
+@ Function to print ASCII
+@ Args:
+@ r1 - pointer to beginning of ascii string
+@ r2 - length of string in bytes
+printAscii:
+	push	{lr}
+	push	{r0-r7}
+	mov	r0, #1
+	mov	r7, #4		 @ Linux Service command code to write string
+	svc	0		 @ Issue cmd to display string.
+	pop	{r0-r7}
+	pop	{pc}
+
+@ Function to print decimal number as ASCII
+@ Args:
+@ r0 - decimal number
+printDec:
+	push	{lr}
+	push	{r0-r8}
+	ldr	r6, =outBuff
+	
+	mov	r1, #100
+	bl	modN		@ Get 100s place
+	ldr	r7, [r6]
+	add	r1, #0x30	@ To ascii
+	@lsl	r1, #8		 Rotate 8 positions to left
+	orr	r1, r7		@ or in 100s place
+	str	r1, [r6]
+
+	mov	r1, #10
+	bl	modN		@ Get 10s place
+	add	r1, #0x30	@ To ascii
+	lsl	r1, #8		@ Rotate 16 positions to left
+	ldr	r7, [r6]
+	orr	r1, r7		@ or in 10s place
+	str	r1, [r6]
+
+	add	r0, #0x30	@ Remainder is 1s place, convert to ascii
+	lsl	r0, #16		@ Rotate 24 positions to left
+	ldr	r7, [r6]
+	orr	r0, r7		@ or in 1s place
+	str	r0, [r6]
+
+	ldr	r0, =#0x2E	@ Load '.' into r0
+	str	r0, [r6,#3]
+
+	ldr	r0, =outBuff
+	bl	strlen
+	
+	mov	r2, r0		@ Move strlen to r2
+	ldr	r1, =outBuff	
+	mov	r0, #STDOUT
+	bl	write
+	pop	{r0-r8}
+	pop	{pc}
+
 @ Prints float to STDOUT
-@
-@
+@ Args:
+@ r0 - foating point number
 printFloat:
 	push	{lr}
+	push	{r0-r8}
+	ldr	r1, =minus	@ Load r0 with negative sign
+	mov	r2, #1		@ Character count
+	movs	r6, r0, lsl #1	@ Move sign bit to "C" flag
+	blcs	printAscii	@ Print negative sign if sign bit was set
 
+	mov	r3, r0, lsl #8
+	orr	r3, #0x80000000	@ Set assumed high order bit
+	mov	r0, #0		@ set whole part = 0
+	cmp	r6, #0		@ If both mantissa and exponent = 0
+	beq	display		@ If equal branch to display
+	
+	mov	r6, r6, lsr #24	@ Right justify biased exponent
+	subs	r6, #126	@ Remove the exponent bias
+	beq	display		@ If exponent == 0, no shifting
+	blt	shiftRight	@ Valuse lt .5 must be right shifted
 
+	rsb	r5, r6, #32	@ Convert left shift to right shift count
+	mov	r0, r3, lsr r5	@ Get whole number portion of num
+	lsl	r3, r6		@ Get the fractional part of num
+	b	display		@ Unconditional branch to display
 
+shiftRight:
+	rsb	r6, r6, #0	@ Get positive shift count
+	lsr	r3, r6
+
+display:
+	bl	printDec	@ Print whole part of num and decimal point
+
+	mov	r4, #10		@ Store decimal number 10 for shifting across each digit
+	ldr	r5, =digits	@ Sore address of digits in r5
+
+nxtdfd:
+	umull	r3, r1, r4, r3	@ "Shift" next decimal digit into r1
+	add	r1, r5		@ Set digit pointer
+	bl	printAscii	@ Print digit
+	cmp	r3, #0		@ Set Z flag if mantissa is zero
+	bne	nxtdfd		@ Otherwise, print next digit
+
+	ldr	r1, =nl		@ Store pointer to newline character in r1
+	bl	printAscii	@ Print newline character
+
+	pop	{r0-r8}
 	pop	{pc}
 
 terminate:
 	mov	r0, #0
 	mov	r7, #1
 	swi	0
+
+@ Computes mod N of a number
+@ Args:
+@ r0 - number
+@ r1 - mod
+@ Returns:
+@ r0 - remainder
+@ r1 - N
+modN:
+	push	{lr}
+	push	{r3}
+	mov	r3, #0
+cont:
+	sub	r0, r1
+	add	r3, #1
+	cmp	r0, #0
+	bgt	cont
+	cmp	r0, #0
+	beq	modDone
+	add	r0, r1
+	sub	r3, #1
+modDone:
+	mov	r1, r3
+	pop	{r3}
+	pop	{pc}
+
 
 	.data
 point1:
@@ -128,3 +260,6 @@ point1:
 input:
 	.space	20
 	.equ	inputLen, (.-input)
+
+outBuff:
+	.space	20
