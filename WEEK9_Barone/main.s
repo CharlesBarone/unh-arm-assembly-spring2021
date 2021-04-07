@@ -30,6 +30,7 @@ nl:
 main:
 	bl	uio
 	bl	convertFloat
+	bl	sine
 	bl	printFloat
 	b	terminate
 
@@ -106,15 +107,33 @@ copy2r0:
 	pop		{pc}
 
 @ Computes the sine of a float
+@ Approximation: sin(x) = x - x^3/3! + x^5/5!
 @ Args:
 @ r0 - floating point number
 sine:
-	push	{lr}
+	push		{lr}
 
+	vmov		s0, r0		@ Move float into floating point reg s0
+	ldr		r1, =three	@ Store pointer to 3/3! in r1
+	vldr		s1, [r1]	@ Store 3/3! in s1
+	bl		powf		@ Call powf(s0, s1)
 
+	vmov		s4, r0		@ Move float into floating point reg s4
+	vsub.f32	s4, s0		@ s4 = x - x^3/3!
 
+	vmov		s0, r0		@ Move float into floating point reg s0
+	ldr		r1, =five	@ Store pointer to 5.0 in r1
+	vldr		s1, [r1]	@ Store 5.0 in s1
+	ldr		r1, =fiveFac	@ Store pointer to 5! in r1
+	vldr		s2, [r1]	@ Store 5! in s2
+	vdiv.f32	s1, s1, s2	@ s1 = s1/s2 = 5/5!
+	bl		powf		@ Call powf(s0, s1)
 
-	pop	{pc}
+	vadd.f32	s4, s0		@ s4 = x - x^3/3! + x^5/5!
+
+	vmov		r0, s4		@ Store float for return
+
+	pop		{pc}
 
 @ Function to print ASCII
 @ Args:
@@ -257,9 +276,18 @@ modDone:
 point1:
 	.float	0.1		@ Floating point value to "shift" num right 1 place
 
+five:
+	.float	5.0		@ Used in sine function
+
+fiveFac:
+	.float	120.0		@ Used in sine function, 5!
+
+three:
+	.float	0.5		@ Used in sine function, 3/3!
+
 input:
-	.space	20
+	.space	20		@ User ASCII input buffer
 	.equ	inputLen, (.-input)
 
 outBuff:
-	.space	20
+	.space	20		@ Used as a buffer when generating ASCII output
