@@ -112,27 +112,35 @@ copy2r0:
 @ r0 - floating point number
 sine:
 	push		{lr}
-
-	vmov		s0, r0		@ Move float into floating point reg s0
-	ldr		r1, =three	@ Store pointer to 3/3! in r1
-	vldr		s1, [r1]	@ Store 3/3! in s1
-	bl		powf		@ Call powf(s0, s1)
-
-	vmov		s4, r0		@ Move float into floating point reg s4
-	vsub.f32	s4, s0		@ s4 = x - x^3/3!
-
-	vmov		s0, r0		@ Move float into floating point reg s0
-	ldr		r1, =five	@ Store pointer to 5.0 in r1
-	vldr		s1, [r1]	@ Store 5.0 in s1
-	ldr		r1, =fiveFac	@ Store pointer to 5! in r1
-	vldr		s2, [r1]	@ Store 5! in s2
-	vdiv.f32	s1, s1, s2	@ s1 = s1/s2 = 5/5!
-	bl		powf		@ Call powf(s0, s1)
-
-	vadd.f32	s4, s0		@ s4 = x - x^3/3! + x^5/5!
-
-	vmov		r0, s4		@ Store float for return
-
+	vmov		s0, r0		@ Move float into s0
+	
+	ldr		r3, =pi		@ Store address of pi into r3
+	vldr		s1, [r3]	@ s1 = pi
+	ldr		r3, =num180	@ Store address of num180 into r3
+	vldr		s2, [r3]	@ s2 = 180.0
+	vdiv.f32	s1, s1, s2	@ s1 = pi/180
+	vmul.f32	s0, s0, s1	@ s0 = x in radians
+	vmov		r0, s0
+	vmov.f32	s1, s0		@ Copy float into s1
+	
+	vmul.f32	s1, s1, s0	@ x * x = x^2
+	vmul.f32	s1, s1, s0	@ x^2 * x = x^3
+	vmov.f32	s2, #6.0	@ s2 = 3!
+	vdiv.f32	s1, s1, s2	@ s1 = x^3/3!
+	vmov		r0, s1
+	vsub.f32	s1, s0, s1	@ s1 = x - x^3/3!
+	vmov		r0, s1
+	vmul.f32	s2, s0, s0	@ s2 = x * x = x^2
+	vmul.f32	s2, s2, s0	@ s2 = x^2 * x = x^3
+	vmul.f32	s2, s2, s0	@ s2 = x^3 * x = x^4
+	vmul.f32	s2, s2, s0	@ s2 = x^4 * x = x^5
+	ldr		r3, =fiveFac	@ Store memory address of 5! in r3
+	vldr		s3, [r3]	@ s3 = 5!
+	vdiv.f32	s2, s2, s3	@ s2 = x^5/5!
+	vmov		r0, s2
+	vadd.f32	s0, s1, s2	@ Store sin(x) in s0
+	
+	vmov		r0, s0		@ Store float for return
 	pop		{pc}
 
 @ Function to print ASCII
@@ -160,7 +168,6 @@ printDec:
 	bl	modN		@ Get 100s place
 	ldr	r7, [r6]
 	add	r1, #0x30	@ To ascii
-	@lsl	r1, #8		 Rotate 8 positions to left
 	orr	r1, r7		@ or in 100s place
 	str	r1, [r6]
 
@@ -273,18 +280,17 @@ modDone:
 
 
 	.data
-point1:
-	.float	0.1		@ Floating point value to "shift" num right 1 place
-
-five:
-	.float	5.0		@ Used in sine function
-
 fiveFac:
-	.float	120.0		@ Used in sine function, 5!
+	.float	120.0		@ Used in sine
 
-three:
-	.float	0.5		@ Used in sine function, 3/3!
+pi:
+	.float 3.14159		@ Used in sine
 
+num180:
+	.float	180.0		@ Used in sine
+
+point1:
+	.float	0.1		@ Used in convertFloat
 input:
 	.space	20		@ User ASCII input buffer
 	.equ	inputLen, (.-input)
