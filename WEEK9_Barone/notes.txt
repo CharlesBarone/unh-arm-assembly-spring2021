@@ -1,0 +1,3 @@
+The main issue I encountered in this program was misreading the sin(x) approximation that was provided.
+
+Whilst doing my final debug, and checking the math with a calculator manually, I came to the conclusion that this program, using the approximation provided is only accurate from 0 degrees to 90 degrees.

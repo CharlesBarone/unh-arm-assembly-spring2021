@@ -1,0 +1,50 @@
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK9_Barone $ ./main.out 
+Please input a number in degrees from 0.00 to 360.00 >>
+120.0
+000.89904558658599853515625
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK9_Barone $ ./main.out 
+Please input a number in degrees from 0.00 to 360.00 >>
+200.00
+000.7206118106842041015625
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK9_Barone $ ./main.out 
+Please input a number in degrees from 0.00 to 360.00 >>
+217.72
+001.25742053985595703125
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK9_Barone $ ./main.out 
+Please input a number in degrees from 0.00 to 360.00 >>
+126.05
+000.8548090457916259765625
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK9_Barone $ 90.00
+-bash: 90.00: command not found
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK9_Barone $ ./main.out 
+Please input a number in degrees from 0.00 to 360.00 >>
+90.00
+001.00452482700347900390625
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK9_Barone $ ./main.out 
+Please input a number in degrees from 0.00 to 360.00 >>
+180.00
+000.524043560028076171875
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK9_Barone $ ./main.out 
+Please input a number in degrees from 0.00 to 360.00 >>
+45.00
+000.70714271068572998046875
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK9_Barone $ ./main.out 
+Please input a number in degrees from 0.00 to 360.00 >>
+95.00
+001.00277578830718994140625
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK9_Barone $ ./main.out 
+Please input a number in degrees from 0.00 to 360.00 >>
+120.00
+000.899045467376708984375
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK9_Barone $ ./main.out 
+Please input a number in degrees from 0.00 to 360.00 >>
+140.00
+000.737861931324005126953125
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK9_Barone $ ./main.out 
+Please input a number in degrees from 0.00 to 360.00 >>
+160.00
+000.57823741436004638671875
+pi@raspberrypi:~/assembly/unh-arm-assembly-spring2021/WEEK9_Barone $ ./main.out 
+Please input a number in degrees from 0.00 to 360.00 >>
+360.00
+046.546539306640625
