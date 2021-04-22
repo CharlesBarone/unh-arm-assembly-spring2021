@@ -5,6 +5,23 @@
 @	Takes ASCII input from a buffer to simulate a
 @	targeting system.
 @
+@	Constants:
+@	- K_Charge = 200000000.0 N/Kg
+@	- L_barrel = 10.0 m
+@	- m_projectile = 100.0 Kg
+@
+@	Input Buffer Format:
+@	(Whitespace only included for readability)
+@	"TAR N BR XXX.XX EV YY.YY CRG QQQ.QQ NULL"
+@	- TAR N is the target number
+@	- BR is the corrected bearing to the target
+@	  (in degrees from true North)
+@	- EV is the barrel elevation
+@	  (in degrees from the x-axis)
+@	- CRG is the charge required
+@	  (in Kg)
+@	- NULL is a Null Terminator (\0)
+@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 	.cpu	cortex-a53
@@ -19,6 +36,7 @@ inBuff:
 	.ascii "TAR1RNG00123.12BR123.12SP12.12DIR123.12\0"
 
 	.align
+@ Program entry point
 main:
 	@ readDIR
 	ldr	r3, =DIR
@@ -39,13 +57,16 @@ main:
 	bl	readFloat
 
 	bl	calcInitValues
+	bl	calcUncorrValues
 
 	bl	terminate
 
 @ Calculates initial values
 @ Args:
 @ DIR
-@ BR
+@ K_Charge
+@ L_barrel
+@
 @ Returns:
 @ t_barrel
 @ v_projectile
@@ -96,9 +117,64 @@ calcInitValues:
 	pop		{pc}
 
 
+@ Calculates uncorrected values
+@ Args:
+@ BR
+@ DIR
+@ v_proj_init_z
+@ v_proj_init_xyplane
+@
+@ Returns:
+@ t_flight_uncorrected
+@ R_projectile_uncorrected
+@ R_x
+@ R_y
+@ D
+@ D_x
+@ D_y
+calcUncorrValues:
+	push		{lr}
+
+
+
+
+
+	pop		{pc}
+
+@ Calculates final values
+@ Args:
+@ R_x
+@ R_y
+@ D
+@ D_x
+@ D_y
+@ v_projectile
+@ v_proj_init_xyplane
+@ t_flight_uncorrected
+@ L_barrel
+@ m_projectile
+@ K_Charge
+@
+@ Returns:
+@ R_aim
+@ Bearing_aim
+@ t_flight_corrected
+@ elev_aim
+@ M_charge
+calcFinalValues:
+	push		{lr}
+
+
+
+
+
+
+	pop		{pc}
+
 @ Computes sin(x)=y
 @ Args:
 @ s0 - x
+@
 @ Returns:
 @ s0 - y
 sine:
@@ -160,6 +236,7 @@ endSine:
 @ Computes cos(x)=y
 @ Args:
 @ s0 - x
+@
 @ Returns:
 @ s0 - y
 cosine:
@@ -208,6 +285,7 @@ endCos:
 @ Computes arctan(x)=y
 @ Args:
 @ s0 - x
+@
 @ Returns:
 @ s0 - y
 arctan:
@@ -264,6 +342,7 @@ endAtan:
 @ Args:
 @ r1 - x
 @ s6 - x
+@
 @ Returns:
 @ s6 - x!
 factorial:
@@ -286,6 +365,7 @@ facEnd:
 @ Args:
 @ s6 - a
 @ r1 - b (int)
+@
 @ Returns:
 @ s6 - c
 power:
@@ -330,6 +410,7 @@ ReadExit:
 @ Converts ascii to float
 @ Args:
 @ TempStr - float in ascii
+@
 @ Returns:
 @ r0 - floating point number
 convertFloat:
@@ -386,7 +467,7 @@ copy2r0:
 	pop		{r2-r8}
 	pop		{pc}
 
-
+@ Terminates the program
 terminate:
 	mov	r0, #0
 	mov	r7, #1
@@ -394,13 +475,13 @@ terminate:
 
 	.data
 tmp:
-	.float	90.0
+	.float	90.0		@ DEBUG FOR TRIG FUNCTION TESTING REMOVE LATER
 
 outBuff:
 	.space	64
 
 TempStr:
-	.space	32
+	.space	32		@ Used as a temporary buffer
 
 DIR:
 	.space	8
@@ -428,12 +509,6 @@ L_barrel:
 
 m_projectile:
 	.float	100.0		@ Constant value used in calculations
-
-m_charge:
-	.float	2.0		@ Constant value used in calculations
-
-a_projectile:
-	.space	8
 
 t_barrel:
 	.space	8
