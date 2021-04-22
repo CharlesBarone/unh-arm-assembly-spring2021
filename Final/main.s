@@ -180,8 +180,38 @@ calcUncorrValues:
 	str		r0, [r1]	@ Store floating point number in R_x
 
 	@ R_y = R_projectile_uncorrected * sin(theta)
+	ldr		r0, =BR
+	vldr		s0, [r0]	@ s0 = theta = BR
+	bl		sine		@ s0 = sin(theta)
+	ldr		r0, =R_projectile_uncorrected
+	vldr		s1, [r0]	@ Load value of float R_projectile_uncorrected into s1
+	vmul.f32	s0, s0, s1	@ s0 = R_projectile_uncorrected * sin(theta)
+	vmov		r0, s0		@ Move R_y into r0
+	ldr		r1, =R_y
+	str		r0, [r1]	@ Store floating point number in R_y
 
+	@ D = SP * t_flight_uncorrected
+	ldr		r0, =t_flight_uncorrected
+	vldr		s0, [r0]	@ Load value of float t_flight_uncorrected into s0
+	ldr		r0, =SP
+	vldr		s1, [r0]	@ Load value of float SP into s1
+	vmul.f32	s0, s0, s1	@ s0 = SP * t_flight_uncorrected
+	vmov		r0, s0		@ Move D into r0
+	ldr		r1, =D
+	str		r0, [r1]	@ Store floating point number in D
 
+	@ D_x = D * cos(Phi)
+	ldr		r0, =DIR
+	vldr		s0, [r0]	@ s0 = Phi = DIR
+	bl		cosine		@ s0 = cos(Phi)
+	ldr		r0, =D
+	vldr		s1, [r0]	@ Load value of float D into s1
+	vmul.f32	s0, s0, s1	@ s0 = D * cos(Phi)
+	vmov		r0, s0		@ Move D into r0
+	ldr		r1, =D_x
+	str		r0, [r1]	@ Store floating point number in D_x
+
+	@ D_y = D * sin(Phi)
 
 	pop		{pc}
 
