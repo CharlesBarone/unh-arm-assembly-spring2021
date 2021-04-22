@@ -40,6 +40,11 @@ main:
 
 	bl	calcInitValues
 
+	ldr		r0, =tmp
+	vldr		s0, [r0]
+	bl		sine
+	vmov		r0, s0
+
 	bl	terminate
 
 @ Calculates initial values
@@ -193,6 +198,61 @@ endCos:
 	vmov.f32	s0, s1		@ Store float for return
 	pop		{pc}
 
+@ Computes arctan(x)=y
+@ Args:
+@ s0 - x
+@ Returns:
+@ s0 - y
+arctan:
+	push		{lr}	
+	ldr		r3, =pi		@ Store address of pi into r3
+	vldr		s1, [r3]	@ s1 = pi
+	ldr		r3, =num180	@ Store address of num180 into r3
+	vldr		s2, [r3]	@ s2 = 180.0
+	vdiv.f32	s1, s1, s2	@ s1 = pi/180
+	vmul.f32	s0, s0, s1	@ s0 = x in radians
+
+	vmov.f32	s1, s0		@ Copy float into s1
+	
+	vmov.f32	s6, s0
+	mov		r1, #3
+	bl		power
+	vmov.f32	s1, s6		@ s1 = x^3
+	vmov.f32	s2, #3.0	@ s2 = 3
+	vdiv.f32	s1, s1, s2	@ s1 = x^3/3
+	
+	vsub.f32	s1, s0, s1	@ s1 = x - x^3/3
+
+
+	vmov.f32	s4, #5.0
+	mov		r4, #5
+	mov		r5, #0		@ bool. 0 = add, 1 = sub
+atanLoop:
+	cmp		r4, #51
+	beq		endAtan
+	vmov.f32	s6, s0
+	mov		r1, r4
+	bl		power
+	vmov.f32	s2, s6		@ s2 = x^r4
+	vmov.f32	s3, s4		@ s3 = s4
+	vdiv.f32	s2, s2, s3	@ s2 = x^r4/r4
+	cmp		r5, #0
+	beq		atanAdd
+	vsub.f32	s1, s1, s2
+	mov		r5, #0
+	b		skipAtanAdd
+atanAdd:
+	vadd.f32	s1, s1, s2
+	mov		r5, #1
+skipAtanAdd:
+	vmov.f32	s6, #2.0
+	vadd.f32	s4, s6
+	add		r4, #2
+	b		atanLoop	@ Unconditional branch to sineLoop
+endAtan:	
+	vmov.f32	s0, s1		@ Store float for return
+	pop		{pc}
+
 @ Computes x! (X as an int and float are given, but returns a floating point register)
 @ Args:
 @ r1 - x
@@ -327,7 +387,7 @@ terminate:
 
 	.data
 tmp:
-	.float	330.0
+	.float	90.0
 
 outBuff:
 	.space	64
