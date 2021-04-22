@@ -40,17 +40,17 @@ main:
 
 	bl	calcInitValues
 
-	ldr		r0, =tmp
-	vldr		s0, [r0]
-	bl		sine
-	vmov		r0, s0
-
 	bl	terminate
 
 @ Calculates initial values
 @ Args:
 @ DIR
 @ BR
+@ Returns:
+@ t_barrel
+@ v_projectile
+@ v_proj_init_xyplane
+@ v_proj_init_z
 calcInitValues:
 	push		{lr}
 	@ t_barrel = sqrt((2 * L_barrel) / K_Charge)
@@ -72,20 +72,27 @@ calcInitValues:
 	ldr		r1, =v_projectile
 	str		r0, [r1]	@ Store floating point number in v_projectile
 
-	@ Phi = DIR * 3.14159 / 180.0
+	@ v_proj_init_xyplane = v_projectile * cos(Phi). Phi = DIR
 	ldr		r0, =DIR
-	vldr		s0, [r0]	@ Load value of float DIR into s0
-	ldr		r0, =pi
-	vldr		s1, [r0]	@ Load value of float pi into s1
-	ldr		r0, =num180
-	vldr		s3, [r0]	@ Load value of 180.0 into s3
-	vmul.f32	s0, s0, s1	@ s0 = DIR * pi
-	vdiv.f32	s0, s0, s3	@ s0 = s0 / 180.0 = Phi
-	vmov		r0, s0
-	ldr		r1, =Phi
-	str		r0, [r1]	@ Store floating point number in Phi
+	vldr		s0, [r0]	@ s0 = Phi = DIR
+	bl		cosine		@ s0 = cos(Phi)
+	ldr		r0, =v_projectile
+	vldr		s1, [r0]	@ Load value of float v_projectile into s1
+	vmul.f32	s0, s0, s1	@ s0 = v_projectile * cos(Phi)
+	vmov		r0, s0		@ Move v_proj_init_xyplane into r0
+	ldr		r1, =v_proj_init_xyplane
+	str		r0, [r1]	@ Store floating point number in v_proj_init_xyplane
 
-
+	@ v_proj_init_z = v_projectile * sin(Phi)
+	ldr		r0, =DIR
+	vldr		s0, [r0]	@ s0 = Phi = DIR
+	bl		sine		@ s0 = sin(Phi)
+	ldr		r0, =v_projectile
+	vldr		s1, [r0]	@ Load value of float v_projectile into s1
+	vmul.f32	s0, s0, s1	@ s0 = v_projectile * sin(Phi)
+	vmov		r0, s0		@ Move v_proj_init_z into r0
+	ldr		r1, =v_proj_init_z
+	str		r0, [r1]	@ Store floating point number in v_proj_init_z
 	pop		{pc}
 
 
@@ -434,16 +441,10 @@ t_barrel:
 v_projectile:
 	.space	8
 
-Phi:
-	.space	8
-
 v_proj_init_xyplane:
 	.space	8
 
 v_proj_init_z:
-	.space	8
-
-theta:
 	.space	8
 
 t_flight_uncorrected:
