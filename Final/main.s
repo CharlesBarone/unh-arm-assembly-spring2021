@@ -40,12 +40,6 @@ main:
 
 	bl	calcInitValues
 
-	ldr		r0, =tmp
-	vldr		s0, [r0]
-	bl		sine
-	vmov		r0, s0
-	
-
 	bl	terminate
 
 @ Calculates initial values
@@ -103,7 +97,7 @@ sine:
 	vldr		s2, [r3]	@ s2 = 180.0
 	vdiv.f32	s1, s1, s2	@ s1 = pi/180
 	vmul.f32	s0, s0, s1	@ s0 = x in radians
-	vmov		r0, s0
+
 	vmov.f32	s1, s0		@ Copy float into s1
 	
 	vmov.f32	s6, s0
@@ -153,16 +147,50 @@ endSine:
 
 @ Computes cos(x)=y
 @ Args:
-@ r0 - x
+@ s0 - x
 @ Returns:
-@ r0 - y
+@ s0 - y
 cosine:
 	push		{lr}
+	ldr		r3, =pi
+	vldr		s1, [r3]
+	ldr		r3, =num180
+	vldr		s2, [r3]
+	vdiv.f32	s1, s1, s2
+	vmul.f32	s0, s0, s1
+	
+	vmov.f32	s1, #1.0
 
-
-
-
-
+	vmov.f32	s4, #2.0
+	mov		r4, #2
+	mov		r5, #0		@ bool. 0 = sub, 1 = add
+cosLoop:
+	cmp		r4, #50
+	beq		endCos
+	vmov.f32	s6, s0
+	mov		r1, r4
+	bl		power
+	vmov.f32	s2, s6		@ s2 = x^r4
+	vmov.f32	s6, s4
+	mov		r1, r4
+	bl		factorial
+	vmov.f32	s3, s6		@ s3 = r4!
+	vdiv.f32	s2, s2, s3	@ s2 = x^r4/r4!
+	cmp		r5, #0
+	beq		cosSub
+	vadd.f32	s1, s1, s2
+	mov		r5, #0
+	b		skipCosSub
+cosSub:
+	vsub.f32	s1, s1, s2
+	mov		r5, #1
+skipCosSub:
+	vmov.f32	s6, #2.0
+	vadd.f32	s4, s6
+	add		r4, #2
+	b		cosLoop		@ Unconditional branch to cosLoop
+endCos:	
+	vmov.f32	s0, s1		@ Store float for return
 	pop		{pc}
 
 @ Computes x! (X as an int and float are given, but returns a floating point register)
@@ -322,11 +350,8 @@ pi:
 num180:
 	.float	180.0
 
-fiveFac:
-	.float	120.0		@ Used in sine
-
 point1:
-	.float	0.1		@ Used in sine
+	.float	0.1
 
 K_Charge:
 	.float	200000000.0	@ Constant value used in calculations. Also happens to be accel.
