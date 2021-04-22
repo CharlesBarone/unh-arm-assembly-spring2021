@@ -12,6 +12,21 @@
 @
 @	Input Buffer Format:
 @	(Whitespace only included for readability)
+@	"TAR N RNG XXXXX.XX BR YYY.YY SP SS.SS DIR ZZZ.ZZ NULL"
+@	- TAR N is the target number
+@	(Integer from 1 to 6)
+@	- RNG is the range to the target
+@	(in meters)
+@	- BR is the bearing to the target
+@	(in degrees from True North (0 degrees))
+@	- SP is the speed of the target
+@	(in meters per second)
+@	- DIR is the direction of the target
+@	(in degrees from True North (0 degrees))
+@	- NULL is a Null Terminator (\0)
+@
+@	Output Buffer Format:
+@	(Whitespace only included for readability)
 @	"TAR N BR XXX.XX EV YY.YY CRG QQQ.QQ NULL"
 @	- TAR N is the target number
 @	- BR is the corrected bearing to the target
@@ -134,8 +149,31 @@ calcInitValues:
 @ D_y
 calcUncorrValues:
 	push		{lr}
+	@ t_flight_uncorrected = (2.0 * v_proj_init_z) / 9.8
+	vmov.f32	s0, #2.0	@ Move 2.0 into s0
+	vmov.f32	s1, #9.8	@ Move 9.8 into s1
+	ldr		r0, =v_proj_init_z
+	vldr		s2, [r0]	@ Load value of float v_proj_init_z into s2
+	vmul.f32	s0, s0, s2	@ s0 = 2.0 * v_proj_init_z
+	vdiv.f32	s0, s0, s1	@ s0 = (2.0 * v_proj_init_z) / 9.8
+	vmov		r0, s0		@ Move t_flight_uncorrected into r0
+	ldr		r1, =t_flight_uncorrected
+	str		r0, [r1]	@ Store floating point number in t_flight_uncorrected
+
+	@ R_projectile_uncorrected = v_proj_init_xyplane * t_flight_uncorrected
+	ldr		r0, =v_proj_init_xyplane
+	vldr		s1, [r0]	@ Load value of float v_proj_init_xyplane into s1
+	vmul.f32	s0, s0, s1	@ s0 = v_proj_init_xyplane * t_flight_uncorrected
+	vmov		r0, s0		@ Move R_projectile_uncorrected into r0
+	ldr		r1, =R_projectile_uncorrected
+	str		r0, [r1]	@ Store floating point number in R_projectile_uncorrected
+
+	@ R_x = R_projectile_uncorrected * cos(theta)
+	
 
 
+
+	@ R_y = R_projectile_uncorrected * sin(theta)
 
 
 
