@@ -375,13 +375,6 @@ endSine:
 @ s0 - y
 arcSin:
 	push		{lr}
-	ldr		r3, =pi		@ Store address of pi into r3
-	vldr		s1, [r3]	@ s1 = pi
-	ldr		r3, =num180	@ Store address of num180 into r3
-	vldr		s2, [r3]	@ s2 = 180.0
-	vdiv.f32	s1, s1, s2	@ s1 = pi/180
-	vmul.f32	s0, s0, s1	@ s0 = x in radians
-
 	vmov.f32	s1, s0		@ Copy float into s1
 	
 	vmov.f32	s6, s0
@@ -406,13 +399,24 @@ arcSinLoop:
 	mov		r1, r4
 	bl		power
 	vmov.f32	s2, s6		@ s2 = x^r4
-	vmov.f32	s6, s4
-	mov		r1, r4
-	bl		factorial
-	vmov.f32	s3, s6		@ s3 = r4!
-	vdiv.f32	s2, s2, s3	@ s2 = x^r4/r4!
+	
+	vdiv.f32	s2, s2, s4	@ s2 = x^r4/r4
+
+	vmov.f32	s6, #2.0
+	vsub.f32	s6, s4, s6
+	sub		r1, r4, #2
+	bl		doubleFactorial
+	vmov.f32	s3, s6
+
+	vmov.f32	s6, #1.0
+	vsub.f32	s6, s4, s6
+	sub		r1, r4, #1
+	bl		doubleFactorial
+	
+	vdiv.f32	s3, s3, s6
+	vmul.f32	s2, s2, s3
+
 	vadd.f32	s1, s1, s2
-	mov		r5, #0
 
 	vmov.f32	s6, #2.0
 	vadd.f32	s4, s6
@@ -471,21 +475,30 @@ endCos:
 	vmov.f32	s0, s1		@ Store float for return
 	pop		{pc}
 
+@ Computes arccos(x)=y
+@ Args:
+@ s0 - x
+@
+@ Returns:
+@ s0 - y
+arcCos:
+	push		{lr}	
+	bl		arcSin		@ s0 = sin^-1(x)
+	ldr		r0, =pi
+	vldr		s1, [r0]	@ s1 = pi
+	vmov.f32	s2, #2.0	@ s2 = 2.0
+	vdiv.f32	s1, s1, s2	@ s1 = pi / 2.0
+	vsub.f32	s0, s1, s0	@ s0 = (pi/2.0) - sin^-1(x)
+	pop		{pc}
+
 @ Computes arctan(x)=y
 @ Args:
 @ s0 - x
 @
 @ Returns:
 @ s0 - y
-arctan:
+arcTan:
 	push		{lr}	
-	ldr		r3, =pi		@ Store address of pi into r3
-	vldr		s1, [r3]	@ s1 = pi
-	ldr		r3, =num180	@ Store address of num180 into r3
-	vldr		s2, [r3]	@ s2 = 180.0
-	vdiv.f32	s1, s1, s2	@ s1 = pi/180
-	vmul.f32	s0, s0, s1	@ s0 = x in radians
-
 	vmov.f32	s1, s0		@ Copy float into s1
 	
 	vmov.f32	s6, s0
@@ -698,9 +711,6 @@ terminate:
 	swi	0
 
 	.data
-tmp:
-	.float	90.0		@ DEBUG FOR TRIG FUNCTION TESTING REMOVE LATER
-
 outBuff:
 	.space	64
 
