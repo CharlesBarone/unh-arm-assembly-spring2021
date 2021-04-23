@@ -253,12 +253,14 @@ calcFinalValues:
 	ldr		r0, =D_x
 	vldr		s1, [r0]	@ Load value of float D_x into s1
 	vadd.f32	s0, s0, s1	@ s0 = R_x + D_x
+	vmov.f32	s8, s0		@ Move (R_x + D_x) to s8 for later in Bearing_aim calculation
 	vmul.f32	s0, s0, s0	@ s0 = (R_x + D_x)^2
 	ldr		r0, =R_y
 	vldr		s1, [r0]	@ Load value of float R_y into s1
 	ldr		r0, =D_y
 	vldr		s2, [r0]	@ Load value of float D_y into s2
 	vadd.f32	s1, s1, s2	@ s1 = R_y + D_y
+	vmov.f32	s9, s1		@ Move (R_y + D_y) to s9 for later in Bearing_aim calculation
 	vmul.f32	s1, s1, s1	@ s1 = (R_y + D_y)^2
 	vadd.f32	s0, s0, s1	@ s0 = (R_x + D_x)^2 + (R_y + D_y)^2
 	vsqrt.f32	s0, s0		@ s0 = sqrt((R_x + D_x)^2 + (R_y + D_y)^2)
@@ -267,6 +269,11 @@ calcFinalValues:
 	str		r0, [r1]	@ Store floating point number in R_aim
 
 	@ Bearing_aim = atan((R_x + D_x) / (R_y + D_y))
+	vdiv.f32	s0, s8, s9	@ s0 = (R_x + D_x) / (R_y + D_y). Saved earlier in R_aim calculation.
+	bl		arcTan		@ s0 = atan((R_x + D_x) / (R_y + D_y))
+	vmov		r0, s0
+	ldr		r1, =Bearing_aim
+	str		r0, [r1]	@ Store floating point number in Bearing_aim
 
 
 	@ t_flight_corrected = D / v_projectile + t_flight_uncorrected
@@ -283,7 +290,18 @@ calcFinalValues:
 	str		r0, [r1]	@ Store floating point number in t_flight_corrected
 
 	@ elev_aim = acos(R_aim/(v_proj_init_xyplane * t_flight_corrected))
-
+	ldr		r0, =R_aim
+	vldr		s0, [r0]	@ Load value of float R_aim into s0
+	ldr		r0, =v_proj_init_xyplane
+	vldr		s1, [r0]	@ Load value of float v_proj_init_xyplane into s1
+	ldr		r0, =t_flight_corrected
+	vldr		s2, [r0]	@ Load value of float t_flight_corrected into s2
+	vmul.f32	s1, s1, s2	@ s1 = v_proj_init_xyplane * t_flight_corrected
+	vdiv.f32	s0, s0, s1	@ s0 = R_aim/(v_proj_init_xyplane * t_flight_corrected)
+	bl		arcCos		@ s0 = acos(R_aim/(v_proj_init_xyplane * t_flight_corrected))
+	vmov		r0, s0
+	ldr		r1, =elev_aim
+	str		r0, [r1]	@ Store floating point number in elev_aim
 
 	@ M_charge = 2.0 * L_barrel * m_projectile / (K_Charge * t_flight_corrected^2)
 	vmov.f32	s0, #2.0	@ Move 2.0 into s0
@@ -312,7 +330,8 @@ calcFinalValues:
 @ Returns:
 @ s0 - y
 sine:
-	push		{lr}	
+	push		{lr}
+	push		{r1-r5}
 	ldr		r3, =pi		@ Store address of pi into r3
 	vldr		s1, [r3]	@ s1 = pi
 	ldr		r3, =num180	@ Store address of num180 into r3
@@ -365,6 +384,7 @@ skipSineAdd:
 	b		sineLoop	@ Unconditional branch to sineLoop
 endSine:	
 	vmov.f32	s0, s1		@ Store float for return
+	pop		{r1-r5}
 	pop		{pc}
 
 @ Computes sin^-1(x)=y
@@ -375,6 +395,7 @@ endSine:
 @ s0 - y
 arcSin:
 	push		{lr}
+	push		{r1-r4}
 	vmov.f32	s1, s0		@ Copy float into s1
 	
 	vmov.f32	s6, s0
@@ -424,6 +445,7 @@ arcSinLoop:
 	b		arcSinLoop	@ Unconditional branch to sineLoop
 endArcSin:	
 	vmov.f32	s0, s1		@ Store float for return
+	pop		{r1-r4}
 	pop		{pc}
 
 @ Computes cos(x)=y
@@ -434,6 +456,7 @@ endArcSin:
 @ s0 - y
 cosine:
 	push		{lr}
+	push		{r1-r5}
 	ldr		r3, =pi
 	vldr		s1, [r3]
 	ldr		r3, =num180
@@ -473,6 +496,7 @@ skipCosSub:
 	b		cosLoop		@ Unconditional branch to cosLoop
 endCos:	
 	vmov.f32	s0, s1		@ Store float for return
+	pop		{r1-r5}
 	pop		{pc}
 
 @ Computes arccos(x)=y
@@ -482,13 +506,15 @@ endCos:
 @ Returns:
 @ s0 - y
 arcCos:
-	push		{lr}	
+	push		{lr}
+	push		{r0}
 	bl		arcSin		@ s0 = sin^-1(x)
 	ldr		r0, =pi
 	vldr		s1, [r0]	@ s1 = pi
 	vmov.f32	s2, #2.0	@ s2 = 2.0
 	vdiv.f32	s1, s1, s2	@ s1 = pi / 2.0
 	vsub.f32	s0, s1, s0	@ s0 = (pi/2.0) - sin^-1(x)
+	pop		{r0}
 	pop		{pc}
 
 @ Computes arctan(x)=y
@@ -498,7 +524,8 @@ arcCos:
 @ Returns:
 @ s0 - y
 arcTan:
-	push		{lr}	
+	push		{lr}
+	push		{r1-r5}
 	vmov.f32	s1, s0		@ Copy float into s1
 	
 	vmov.f32	s6, s0
@@ -538,6 +565,7 @@ skipAtanAdd:
 	b		atanLoop	@ Unconditional branch to sineLoop
 endAtan:	
 	vmov.f32	s0, s1		@ Store float for return
+	pop		{r1-r5}
 	pop		{pc}
 
 @ Computes x! (X as an int and float are given, but returns a floating point register)
@@ -549,6 +577,7 @@ endAtan:
 @ s6 - x!
 factorial:
 	push		{lr}
+	push		{r2}
 	vmov.f32	s8, #1.0
 	vmov.f32	s9, #1.0
 	mov		r2, #1
@@ -560,6 +589,7 @@ facLoop:
 	sub		r1, #1		@ Decrement Counter	
 	b		facLoop		@ Unconditional branch to facLoop
 facEnd:
+	pop		{r2}
 	pop		{pc}
 
 @ Computes x!! (Double Factorial)
