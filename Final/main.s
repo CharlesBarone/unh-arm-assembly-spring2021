@@ -48,7 +48,16 @@
 	.text
 
 inBuff:
-	.ascii "TAR1RNG00123.12BR123.12SP12.12DIR123.12\0"
+	.ascii	"TAR1RNG00123.12BR123.12SP12.12DIR123.12\0"
+
+digits:
+	.ascii	"0123456789"
+
+minus:
+	.ascii	"-"
+
+nl:
+	.asciz	"\n"
 
 	.align
 @ Program entry point
@@ -75,7 +84,133 @@ main:
 	bl	calcUncorrValues
 	bl	calcFinalValues
 
+	mov	r0, #0
+	ldr	r1, =outIndex
+	str	r0, [r1]
+
+	ldr	r3, =SP
+	vldr	s0, [r3]
+	vmov	r0, s0
+	bl	formatFloat
+
+	ldr	r0, =outBuff
+	bl	strlen
+
+	mov	r2, r0
+	ldr	r1, =outBuff
+	mov	r0, #STDOUT
+	bl	write
+
 	bl	terminate
+
+@ Ammends decimal number part of float as ASCII to outBuff
+@ Args:
+@ r0 - decimal number
+formatDec:
+	push	{lr}
+	push	{r0-r9}
+	ldr	r6, =outBuff
+	ldr	r9, =outIndex
+	ldr	r8, [r9]	
+
+	mov	r1, #100
+	bl	modN		@ Get 100s place
+	add	r1, #0x30	@ To ascii
+	str	r1, [r6,r8]
+	add	r8, #1
+
+	mov	r1, #10
+	bl	modN		@ Get 10s place
+	add	r1, #0x30	@ To ascii
+	str	r1, [r6,r8]
+	add	r8, #1
+
+	add	r0, #0x30	@ Remainder is 1s place, convert to ascii
+	str	r0, [r6,r8]
+	add	r8, #1
+
+	ldr	r0, =#0x2E	@ Load '.' into r0
+	str	r0, [r6,r8]
+	add	r8, #1
+	str	r8, [r9]
+	pop	{r0-r9}
+	pop	{pc}
+
+@ Function to print ASCII to outBuff
+@ Args:
+@ r1 - pointer to beginning of ascii string
+@ r2 - length of string in bytes
+printAscii:
+	push	{lr}
+	push	{r0-r9}
+	ldr	r6, =outBuff
+	ldr	r9, =outIndex
+	ldr	r8, [r9]
+
+	mov	r5, #0		@ Counter
+printLoop:
+	cmp	r2, #0		@ Check if string is done being parsed
+	beq	exitPrint
+	ldrb	r0, [r1,r5]	@ Load ascii character into r0
+	str	r0, [r6,r8]	@ Store ascii character into outBuff
+	add	r8, #1		@ Increment outIndex
+	sub	r2, #1		@ Decrement remaining length
+	add	r5, #1		@ Increment Counter
+	b	printLoop	@ Unconditional branch to printLoop
+exitPrint:
+	str	r8, [r9]
+	pop	{r0-r9}
+	pop	{pc}
+
+@ Function to ammend a floating point number to outBuff
+@ Args:
+@ r0 - floating point number
+formatFloat:
+	push	{lr}
+	push	{r0-r8}
+	ldr	r1, =minus	@ Load r0 with negative sign
+	mov	r2, #1		@ Character count
+	movs	r6, r0, lsl #1	@ Move sign bit to "C" flag
+	blcs	printAscii	@ Print negative sign if sign bit was set
+
+	mov	r3, r0, lsl #8
+	orr	r3, #0x80000000	@ Set assumed high order bit
+	mov	r0, #0		@ set whole part = 0
+	cmp	r6, #0		@ If both mantissa and exponent = 0
+	beq	display		@ If equal branch to display
+	
+	mov	r6, r6, lsr #24	@ Right justify biased exponent
+	subs	r6, #126	@ Remove the exponent bias
+	beq	display		@ If exponent == 0, no shifting
+	blt	shiftRight	@ Valuse lt .5 must be right shifted
+
+	rsb	r5, r6, #32	@ Convert left shift to right shift count
+	mov	r0, r3, lsr r5	@ Get whole number portion of num
+	lsl	r3, r6		@ Get the fractional part of num
+	b	display		@ Unconditional branch to display
+
+shiftRight:
+	rsb	r6, r6, #0	@ Get positive shift count
+	lsr	r3, r6
+
+display:
+	bl	formatDec	@ Print whole part of num and decimal point
+
+	mov	r4, #10		@ Store decimal number 10 for shifting across each digit
+	ldr	r5, =digits	@ Sore address of digits in r5
+
+nxtdfd:
+	umull	r3, r1, r4, r3	@ "Shift" next decimal digit into r1
+	add	r1, r5		@ Set digit pointer
+	bl	printAscii	@ Print digit
+	cmp	r3, #0		@ Set Z flag if mantissa is zero
+	bne	nxtdfd		@ Otherwise, print next digit
+
+	ldr	r1, =nl		@ Store pointer to newline character in r1
+	bl	printAscii	@ Print newline character
+
+	pop	{r0-r8}
+	pop	{pc}
 
 @ Calculates initial values
 @ Args:
@@ -768,8 +903,11 @@ terminate:
 	swi	0
 
 	.data
+outIndex:
+	.space	8		@ Integer Counter for counting bytes in outBuff
+
 outBuff:
-	.space	64
+	.space	128
 
 TempStr:
 	.space	32		@ Used as a temporary buffer
@@ -854,4 +992,3 @@ elev_aim:
 
 M_Charge:
 	.space	8
-	@ t_barrel = sqrt((2 * L_barrel) / K_Charge)
