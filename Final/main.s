@@ -73,6 +73,7 @@ main:
 
 	bl	calcInitValues
 	bl	calcUncorrValues
+	bl	calcFinalValues
 
 	bl	terminate
 
@@ -151,7 +152,8 @@ calcUncorrValues:
 	push		{lr}
 	@ t_flight_uncorrected = (2.0 * v_proj_init_z) / 9.8
 	vmov.f32	s0, #2.0	@ Move 2.0 into s0
-	vmov.f32	s1, #9.8	@ Move 9.8 into s1
+	ldr		r0, =num9point8
+	vldr		s1, [r0]	@ Load the floating point number 9.8 into s1
 	ldr		r0, =v_proj_init_z
 	vldr		s2, [r0]	@ Load value of float v_proj_init_z into s2
 	vmul.f32	s0, s0, s2	@ s0 = 2.0 * v_proj_init_z
@@ -212,7 +214,15 @@ calcUncorrValues:
 	str		r0, [r1]	@ Store floating point number in D_x
 
 	@ D_y = D * sin(Phi)
-
+	ldr		r0, =DIR
+	vldr		s0, [r0]	@ s0 = Phi = DIR
+	bl		sine		@ s0 = sin(Phi)
+	ldr		r0, =D
+	vldr		s1, [r0]	@ Load value of float D into s1
+	vmul.f32	s0, s0, s1	@ s0 = D * sin(Phi)
+	vmov		r0, s0		@ Move D into r0
+	ldr		r1, =D_y
+	str		r0, [r1]	@ Store floating point number in D_y
 	pop		{pc}
 
 @ Calculates final values
@@ -237,9 +247,35 @@ calcUncorrValues:
 @ M_charge
 calcFinalValues:
 	push		{lr}
+	@ R_aim = sqrt(((R_x + D_x)^2) + ((R_y + D_y)^2))
+	ldr		r0, =R_x
+	vldr		s0, [r0]	@ Load value of float R_x into s0
+	ldr		r0, =D_x
+	vldr		s1, [r0]	@ Load value of float D_x into s1
+	vadd.f32	s0, s0, s1	@ s0 = R_x + D_x
+	vmul.f32	s0, s0, s0	@ s0 = (R_x + D_x)^2
+	ldr		r0, =R_y
+	vldr		s1, [r0]	@ Load value of float R_y into s1
+	ldr		r0, =D_y
+	vldr		s2, [r0]	@ Load value of float D_y into s2
+	vadd.f32	s1, s1, s2	@ s1 = R_y + D_y
+	vmul.f32	s1, s1, s1	@ s1 = (R_y + D_y)^2
+	vadd.f32	s0, s0, s1	@ s0 = (R_x + D_x)^2 + (R_y + D_y)^2
+	vsqrt.f32	s0, s0		@ s0 = sqrt((R_x + D_x)^2 + (R_y + D_y)^2)
+	vmov		r0, s0		@ Move R_aim into r0
+	ldr		r1, =R_aim
+	str		r0, [r1]	@ Store floating point number in R_aim
+
+	@ Bearing_aim = atan((R_x + D_x) / (R_y + D_y))
 
 
+	@ t_flight_corrected = D / v_projectile + t_flight_uncorrected
 
+
+	@ elev_aim = acos(R_aim/(v_proj_init_xyplane * t_flight_corrected))
+
+
+	@ M_charge = 2 * L_barrel * m_projectile / (K_Charge * (t_flight_corrected * t_flight_corrected))
 
 
 
@@ -571,6 +607,9 @@ pi:
 
 num180:
 	.float	180.0
+
+num9point8:
+	.float	9.8
 
 point1:
 	.float	0.1
