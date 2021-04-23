@@ -285,10 +285,24 @@ calcFinalValues:
 	@ elev_aim = acos(R_aim/(v_proj_init_xyplane * t_flight_corrected))
 
 
-	@ M_charge = 2 * L_barrel * m_projectile / (K_Charge * (t_flight_corrected * t_flight_corrected))
-
-
-
+	@ M_charge = 2.0 * L_barrel * m_projectile / (K_Charge * t_flight_corrected^2)
+	vmov.f32	s0, #2.0	@ Move 2.0 into s0
+	ldr		r0, =L_barrel
+	vldr		s1, [r0]	@ Load value of float L_barrel into s1
+	vmul.f32	s0, s0, s1	@ s0 = 2.0 * L_barrel
+	ldr		r0, =m_projectile
+	vldr		s1, [r0]	@ Load value of float m_projectile into s1
+	vmul.f32	s0, s0, s1	@ s0 = 2.0 * L_barrel * m_projectile
+	ldr		r0, =K_Charge
+	vldr		s1, [r0]	@ Load value of float K_Charge into s1
+	ldr		r0, =t_flight_corrected
+	vldr		s2, [r0]	@ Load value of float t_flight_corrected into s2
+	vmul.f32	s2, s2, s2	@ s2 = t_flight_corrected^2
+	vmul.f32	s1, s1, s2	@ s1 = K_Charge * t_flight_corrected^2
+	vdiv.f32	s0, s0, s1	@ s0 = s0 / s1
+	vmov		r0, s0		@ Move M_Charge into r0
+	ldr		r1, =M_Charge
+	str		r0, [r1]	@ Store floating point number in M_Charge
 	pop		{pc}
 
 @ Computes sin(x)=y
@@ -678,5 +692,5 @@ t_flight_corrected:
 elev_aim:
 	.space	8
 
-M_charge:
+M_Charge:
 	.space	8
