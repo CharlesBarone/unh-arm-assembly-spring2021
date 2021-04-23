@@ -90,21 +90,21 @@ main:
 @ v_proj_init_z
 calcInitValues:
 	push		{lr}
-	@ t_barrel = sqrt((2 * L_barrel) / K_Charge)
+	@ a_projectile = (2.0 * L_barrel) / (t_barrel^2);
 	ldr		r0, =L_barrel
 	vldr		s0, [r0]	@ Load value of float L_barrel into s0
-	vmov.f32	s1, #2.0
-	vmul.f32	s0, s0, s1	@ s0 = L_barrel * 2.0
-	ldr		r0, =K_Charge
-	vldr		s1, [r0]	@ Load value of float K_Charge into s1. K_CHarge = accel
-	vdiv.f32	s0, s0, s1	@ s0 = s0 / K_Charge
-	vsqrt.f32	s0, s0
-	vmov		r0, s0		@ Move t_barrel into r0
-	ldr		r1, =t_barrel
-	str		r0, [r1]	@ Store floating point number in t_barrel
+	vmov.f32	s1, #2.0	@ Move 2.0 into s1
+	vmul.f32	s0, s0, s1	@ s0 = (2.0 * L_barrel)
+	ldr		r0, = t_barrel
+	vldr		s1, [r0]	@ Load value of float t_barrel into s1
+	vmul.f32	s2, s1, s1	@ s2 = t_barrel^2
+	vdiv.f32	s0, s0, s2	@ s0 = (2.0 * L_barrel)/(t_barrel^2)
+	vmov		r0, s0		@ Move a_projectile into r0
+	ldr		r1, =a_projectile
+	str		r0, [r1]	@ Store floating point number in a_projectile
 
-	@ v_projectile = K_Charge * t_barrel
-	vmul.f32	s2, s0, s1	@ s2 = K_Charge * t_barrel
+	@ v_projectile = a_projectile * t_barrel
+	vmul.f32	s2, s0, s1	@ s2 = a_projectile * t_barrel
 	vmov		r0, s2
 	ldr		r1, =v_projectile
 	str		r0, [r1]	@ Store floating point number in v_projectile
@@ -608,6 +608,7 @@ doubleFactorial:
 	beq		dfacOdd
 	vmov.f32	s8, #2.0
 	b		skipDfacOdd
+
 dfacOdd:
 	vmov.f32	s8, #1.0
 skipDfacOdd:
@@ -734,6 +735,32 @@ copy2r0:
 	pop		{r2-r8}
 	pop		{pc}
 
+@ Computes mod N of a number
+@ Args:
+@ r0 - number
+@ r1 - mod
+@
+@ Returns:
+@ r0 - remainder
+@ r1 - N
+modN:
+	push	{lr}
+	push	{r3}
+	mov	r3, #0
+contMod:
+	sub	r0, r1
+	add	r3, #1
+	cmp	r0, #0
+	bgt	contMod
+	cmp	r0, #0
+	beq	modDone
+	add	r0, r1
+	sub	r3, #1
+modDone:
+	mov	r1, r3
+	pop	{r3}
+	pop	{pc}
+
 @ Terminates the program
 terminate:
 	mov	r0, #0
@@ -769,7 +796,7 @@ point1:
 	.float	0.1
 
 K_Charge:
-	.float	200000000.0	@ Constant value used in calculations. Also happens to be accel.
+	.float	200000000.0	@ Constant value used in calculations.
 
 L_barrel:
 	.float	10.0		@ Constant value used in calculations
@@ -778,6 +805,9 @@ m_projectile:
 	.float	100.0		@ Constant value used in calculations
 
 t_barrel:
+	.float	0.1		@ Constant value used in calculations
+
+a_projectile:
 	.space	8
 
 v_projectile:
@@ -824,3 +854,4 @@ elev_aim:
 
 M_Charge:
 	.space	8
+	@ t_barrel = sqrt((2 * L_barrel) / K_Charge)
