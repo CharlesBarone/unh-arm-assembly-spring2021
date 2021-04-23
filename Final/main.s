@@ -270,7 +270,17 @@ calcFinalValues:
 
 
 	@ t_flight_corrected = D / v_projectile + t_flight_uncorrected
-
+	ldr		r0, =D
+	vldr		s0, [r0]	@ Load value of float D into s0
+	ldr		r0, =v_projectile
+	vldr		s1, [r0]	@ Load value of float v_projectile into s1
+	vdiv.f32	s0, s0, s1	@ s0 = D / v_projectile
+	ldr		r0, =t_flight_uncorrected
+	vldr		s1, [r0]	@ Load value of float t_flight_uncorrected into s1
+	vadd.f32	s0, s0, s1	@ s0 = D / v_projectile + t_flight_uncorrected
+	vmov		r0, s0		@ Move t_flight_corrected into r0
+	ldr		r1, =t_flight_corrected
+	str		r0, [r1]	@ Store floating point number in t_flight_corrected
 
 	@ elev_aim = acos(R_aim/(v_proj_init_xyplane * t_flight_corrected))
 
