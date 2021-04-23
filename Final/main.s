@@ -367,6 +367,61 @@ endSine:
 	vmov.f32	s0, s1		@ Store float for return
 	pop		{pc}
 
+@ Computes sin^-1(x)=y
+@ Args:
+@ s0 - x
+@
+@ Returns:
+@ s0 - y
+arcSin:
+	push		{lr}
+	ldr		r3, =pi		@ Store address of pi into r3
+	vldr		s1, [r3]	@ s1 = pi
+	ldr		r3, =num180	@ Store address of num180 into r3
+	vldr		s2, [r3]	@ s2 = 180.0
+	vdiv.f32	s1, s1, s2	@ s1 = pi/180
+	vmul.f32	s0, s0, s1	@ s0 = x in radians
+
+	vmov.f32	s1, s0		@ Copy float into s1
+	
+	vmov.f32	s6, s0
+	mov		r1, #3
+	bl		power
+	vmov.f32	s1, s6		@ s1 = x^3
+	vmov.f32	s6, #3.0
+	mov		r1, #3
+	bl		factorial
+	vmov		s2, s6		@ s2 = 3!
+	vdiv.f32	s1, s1, s2	@ s1 = x^3/3!
+	
+	vadd.f32	s1, s0, s1	@ s1 = x + x^3/3!
+
+
+	vmov.f32	s4, #5.0
+	mov		r4, #5
+arcSinLoop:
+	cmp		r4, #51
+	beq		endArcSin
+	vmov.f32	s6, s0
+	mov		r1, r4
+	bl		power
+	vmov.f32	s2, s6		@ s2 = x^r4
+	vmov.f32	s6, s4
+	mov		r1, r4
+	bl		factorial
+	vmov.f32	s3, s6		@ s3 = r4!
+	vdiv.f32	s2, s2, s3	@ s2 = x^r4/r4!
+	vadd.f32	s1, s1, s2
+	mov		r5, #0
+
+	vmov.f32	s6, #2.0
+	vadd.f32	s4, s6
+	add		r4, #2
+	b		arcSinLoop	@ Unconditional branch to sineLoop
+endArcSin:	
+	vmov.f32	s0, s1		@ Store float for return
+	pop		{pc}
+
 @ Computes cos(x)=y
 @ Args:
 @ s0 - x
@@ -492,6 +547,41 @@ facLoop:
 	sub		r1, #1		@ Decrement Counter	
 	b		facLoop		@ Unconditional branch to facLoop
 facEnd:
+	pop		{pc}
+
+@ Computes x!! (Double Factorial)
+@ r1 - x
+@ s6 - x
+@
+@ Returns
+@ s6 - x!!
+doubleFactorial:
+	push		{lr}
+	push		{r2-r4}
+	@ Check parity
+	mov		r3, #1
+	and		r4, r3, r1
+	cmp		r4, r3
+	beq		dfacOdd
+	vmov.f32	s8, #2.0
+	b		skipDfacOdd
+dfacOdd:
+	vmov.f32	s8, #1.0
+skipDfacOdd:
+	vmov.f32	s9, #2.0
+	mov		r2, #1
+	mov		r3, #2
+dfacLoop:
+	cmp		r1, r2
+	beq		dfacEnd
+	cmp		r1, r3
+	beq		dfacEnd
+	vmul.f32	s6, s6, s8
+	vadd.f32	s8, s9
+	sub		r1, #2		@ Decrement Counter	
+	b		dfacLoop	@ Unconditional branch to dfacLoop
+dfacEnd:
+	pop		{r2-r4}
 	pop		{pc}
 
 
