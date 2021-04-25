@@ -59,6 +59,18 @@ minus:
 nl:
 	.asciz	"\n"
 
+TARstr:
+	.ascii "TAR"
+
+BRstr:
+	.ascii "BR"
+
+EVstr:
+	.ascii "EV"
+
+CRGstr:
+	.ascii "CRG"
+
 	.align
 @ Program entry point
 main:
@@ -84,15 +96,75 @@ main:
 	bl	calcUncorrValues
 	bl	calcFinalValues
 
+	bl	genOutput
+
+	bl	terminate
+
+@ Generates output and stores it into outBuff
+@ Args:
+@ inBuff
+@ Bearing_aim
+@ elev_aim
+@ M_Charge
+@
+@ Returns:
+@ outBuff
+genOutput:
+	push	{lr}
+	
+	@ Initialize output index counter
 	mov	r0, #0
 	ldr	r1, =outIndex
 	str	r0, [r1]
 
-	ldr	r3, =SP
+	@ Output TAR
+	ldr	r1, =TARstr
+	ldr	r2, =#3
+	bl	printAscii
+
+	ldr	r5, =inBuff
+	ldr	r4, =outBuff
+	ldrb	r3, [r5, #3]	@ Read character from r5
+	ldr	r1, =outIndex
+	ldr	r2, [r1]
+	str	r3, [r4, r2]	@ Store character into r2
+	add	r2, #1
+	str	r2, [r1]
+
+	@ Output BR
+	ldr	r1, =BRstr
+	ldr	r2, =#2
+	bl	printAscii
+	ldr	r3, =Bearing_aim
 	vldr	s0, [r3]
 	vmov	r0, s0
 	bl	formatFloat
 
+
+	@ Output EV
+	ldr	r1, =EVstr
+	ldr	r2, =#2
+	bl	printAscii
+	ldr	r3, =elev_aim
+	vldr	s0, [r3]
+	vmov	r0, s0
+	bl	formatFloat
+
+
+
+	@ Output CRG
+	ldr	r1, =CRGstr
+	ldr	r2, =#3
+	bl	printAscii
+	ldr	r3, =M_Charge
+	vldr	s0, [r3]
+	vmov	r0, s0
+	bl	formatFloat
+
+	@ Output NULL
+
+
+	@ Test
 	ldr	r0, =outBuff
 	bl	strlen
 
@@ -101,7 +173,8 @@ main:
 	mov	r0, #STDOUT
 	bl	write
 
-	bl	terminate
+
+	pop	{pc}
 
 @ Ammends decimal number part of float as ASCII to outBuff
 @ Args:
@@ -176,6 +249,8 @@ formatFloat:
 	mov	r3, r0, lsl #8
 	orr	r3, #0x80000000	@ Set assumed high order bit
 	mov	r0, #0		@ set whole part = 0
+	svc	0		 @ Issue cmd to display string.
+	svc	0		 @ Issue cmd to display string.
 	cmp	r6, #0		@ If both mantissa and exponent = 0
 	beq	display		@ If equal branch to display
 	
@@ -911,6 +986,9 @@ outBuff:
 
 TempStr:
 	.space	32		@ Used as a temporary buffer
+
+TAR:
+	.space	8
 
 DIR:
 	.space	8
