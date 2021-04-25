@@ -249,8 +249,6 @@ formatFloat:
 	mov	r3, r0, lsl #8
 	orr	r3, #0x80000000	@ Set assumed high order bit
 	mov	r0, #0		@ set whole part = 0
-	svc	0		 @ Issue cmd to display string.
-	svc	0		 @ Issue cmd to display string.
 	cmp	r6, #0		@ If both mantissa and exponent = 0
 	beq	display		@ If equal branch to display
 	
