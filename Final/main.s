@@ -137,6 +137,7 @@ genOutput:
 	bl	printAscii
 	ldr	r3, =Bearing_aim
 	vldr	s0, [r3]
+	bl	rad2Dec
 	vmov	r0, s0
 	bl	formatFloat
 
@@ -147,6 +148,7 @@ genOutput:
 	bl	printAscii
 	ldr	r3, =elev_aim
 	vldr	s0, [r3]
+	bl	rad2Dec
 	vmov	r0, s0
 	bl	formatFloat
 
@@ -162,7 +164,9 @@ genOutput:
 	bl	formatFloat
 
 	@ Output NULL
-
+	ldr	r1, =NULLstr
+	ldr	r2, =#1
+	bl	printAscii
 
 	@ Test
 	ldr	r0, =outBuff
@@ -175,6 +179,25 @@ genOutput:
 
 
 	pop	{pc}
+
+
+@ Converts floating point number from radians to decimal
+@ Args:
+@ s0 - float in radians
+@
+@ Returns:
+@ s0 - float in decimal
+rad2Dec:
+	push		{lr}
+	push		{r0}
+	ldr		r0, =pi
+	vldr		s1, [r0]
+	ldr		r0, =num180
+	vldr		s2, [r0]
+	vmul.f32	s0, s0, s2
+	vdiv.f32	s0, s0, s1
+	pop		{r0}
+	pop		{pc}
 
 @ Ammends decimal number part of float as ASCII to outBuff
 @ Args:
