@@ -56,9 +56,6 @@ digits:
 minus:
 	.ascii	"-"
 
-nl:
-	.asciz	"\n"
-
 TARstr:
 	.ascii "TAR"
 
@@ -70,6 +67,9 @@ EVstr:
 
 CRGstr:
 	.ascii "CRG"
+
+NULLstr:
+	.ascii "\0"
 
 	.align
 @ Program entry point
@@ -272,16 +272,18 @@ display:
 	mov	r4, #10		@ Store decimal number 10 for shifting across each digit
 	ldr	r5, =digits	@ Sore address of digits in r5
 
+	mov	r9, #2		@ Decimal digit limtiter
+
 nxtdfd:
+	cmp	r9, #0		@ If decimal digit limter = 0
+	beq	nxtdfdEnd	@ Skip remaining digits if r9 == 0
 	umull	r3, r1, r4, r3	@ "Shift" next decimal digit into r1
 	add	r1, r5		@ Set digit pointer
 	bl	printAscii	@ Print digit
+	sub	r9, #1
 	cmp	r3, #0		@ Set Z flag if mantissa is zero
 	bne	nxtdfd		@ Otherwise, print next digit
-
-	ldr	r1, =nl		@ Store pointer to newline character in r1
-	bl	printAscii	@ Print newline character
-
+nxtdfdEnd:
 	pop	{r0-r8}
 	pop	{pc}
 
