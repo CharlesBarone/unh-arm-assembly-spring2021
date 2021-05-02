@@ -48,7 +48,7 @@
 	.text
 
 inBuff:
-	.ascii	"TAR1RNG00123.12BR123.12SP12.12DIR123.12\0"
+	.ascii	"TAR1RNG00123.12BR123.12SP99.12DIR300.12\0"
 
 digits:
 	.ascii	"0123456789"
@@ -74,10 +74,12 @@ NULLstr:
 	.align
 @ Program entry point
 main:
+	
+
 	@ readDIR
 	ldr	r3, =DIR
-	ldr	r6, =#15
-	ldr	r8, =#7
+	ldr	r6, =#39
+	ldr	r8, =#33
 	bl	readFloat
 	
 	@ readBR
@@ -258,7 +260,7 @@ exitPrint:
 	pop	{r0-r9}
 	pop	{pc}
 
-@ Function to ammend a floating point number to outBuff
+@ Function to append a floating point number to outBuff
 @ Args:
 @ r0 - floating point number
 formatFloat:
@@ -486,14 +488,14 @@ calcFinalValues:
 	ldr		r0, =D_x
 	vldr		s1, [r0]	@ Load value of float D_x into s1
 	vadd.f32	s0, s0, s1	@ s0 = R_x + D_x
-	vmov.f32	s8, s0		@ Move (R_x + D_x) to s8 for later in Bearing_aim calculation
+	@vmov.f32	s8, s0		@ Move (R_x + D_x) to s8 for later in Bearing_aim calculation
 	vmul.f32	s0, s0, s0	@ s0 = (R_x + D_x)^2
 	ldr		r0, =R_y
 	vldr		s1, [r0]	@ Load value of float R_y into s1
 	ldr		r0, =D_y
 	vldr		s2, [r0]	@ Load value of float D_y into s2
 	vadd.f32	s1, s1, s2	@ s1 = R_y + D_y
-	vmov.f32	s9, s1		@ Move (R_y + D_y) to s9 for later in Bearing_aim calculation
+	@vmov.f32	s9, s1		@ Move (R_y + D_y) to s9 for later in Bearing_aim calculation
 	vmul.f32	s1, s1, s1	@ s1 = (R_y + D_y)^2
 	vadd.f32	s0, s0, s1	@ s0 = (R_x + D_x)^2 + (R_y + D_y)^2
 	vsqrt.f32	s0, s0		@ s0 = sqrt((R_x + D_x)^2 + (R_y + D_y)^2)
@@ -502,7 +504,18 @@ calcFinalValues:
 	str		r0, [r1]	@ Store floating point number in R_aim
 
 	@ Bearing_aim = atan((R_x + D_x) / (R_y + D_y))
-	vdiv.f32	s0, s8, s9	@ s0 = (R_x + D_x) / (R_y + D_y). Saved earlier in R_aim calculation.
+	ldr		r0, =R_x
+	vldr		s0, [r0]	
+	ldr		r0, =D_x
+	vldr		s1, [r0]
+	vadd.f32	s0, s0, s1
+	vmov		r0, s0
+	ldr		r0, =R_y
+	vldr		s1, [r0]
+	ldr		r0, =D_y
+	vldr		s2, [r0]
+	vadd.f32	s1, s1, s2
+	vdiv.f32	s0, s0, s1
 	bl		arcTan		@ s0 = atan((R_x + D_x) / (R_y + D_y))
 	vmov		r0, s0
 	ldr		r1, =Bearing_aim
@@ -750,7 +763,7 @@ arcCos:
 	pop		{r0}
 	pop		{pc}
 
-@ Computes arctan(x)=y
+@ Computes arctan(x)=arcsin(x/sqrt(1+x^2))
 @ Args:
 @ s0 - x
 @
@@ -758,47 +771,16 @@ arcCos:
 @ s0 - y
 arcTan:
 	push		{lr}
-	push		{r1-r5}
+	push		{r0-r5}
 	vmov.f32	s1, s0		@ Copy float into s1
-	
-	vmov.f32	s6, s0
-	mov		r1, #3
-	bl		power
-	vmov.f32	s1, s6		@ s1 = x^3
-	vmov.f32	s2, #3.0	@ s2 = 3
-	vdiv.f32	s1, s1, s2	@ s1 = x^3/3
-	
-	vsub.f32	s1, s0, s1	@ s1 = x - x^3/3
-
-
-	vmov.f32	s4, #5.0
-	mov		r4, #5
-	mov		r5, #0		@ bool. 0 = add, 1 = sub
-atanLoop:
-	cmp		r4, #51
-	beq		endAtan
-	vmov.f32	s6, s0
-	mov		r1, r4
-	bl		power
-	vmov.f32	s2, s6		@ s2 = x^r4
-	vmov.f32	s3, s4		@ s3 = s4
-	vdiv.f32	s2, s2, s3	@ s2 = x^r4/r4
-	cmp		r5, #0
-	beq		atanAdd
-	vsub.f32	s1, s1, s2
-	mov		r5, #0
-	b		skipAtanAdd
-atanAdd:
-	vadd.f32	s1, s1, s2
-	mov		r5, #1
-skipAtanAdd:
-	vmov.f32	s6, #2.0
-	vadd.f32	s4, s6
-	add		r4, #2
-	b		atanLoop	@ Unconditional branch to sineLoop
-endAtan:	
-	vmov.f32	s0, s1		@ Store float for return
-	pop		{r1-r5}
+	vmul.f32	s0, s0, s0	@ s0 = x^2
+	vmov.f32	s2, #1.0	@ s2 = 1.0
+	vadd.f32	s0, s0, s2	@ s0 = 1.0 + x^2
+	vsqrt.f32	s0, s0		@ s0 = sqrt(s0)
+	vdiv.f32	s0, s1, s0	@ s0 = x / s0
+	vmov		r0, s0
+	bl		arcSin		@ s0 = sin^-1(s0)
+	pop		{r0-r5}
 	pop		{pc}
 
 @ Computes x! (X as an int and float are given, but returns a floating point register)
@@ -1001,6 +983,8 @@ terminate:
 	swi	0
 
 	.data
+test:
+	.float	3.0286
 outIndex:
 	.space	8		@ Integer Counter for counting bytes in outBuff
 
@@ -1035,7 +1019,7 @@ point1:
 	.float	0.1
 
 K_Charge:
-	.float	200000000.0	@ Constant value used in calculations.
+	.float	20.0	@ Constant value used in calculations.
 
 L_barrel:
 	.float	10.0		@ Constant value used in calculations
