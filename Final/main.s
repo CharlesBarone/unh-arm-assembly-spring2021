@@ -74,8 +74,6 @@ NULLstr:
 	.align
 @ Program entry point
 main:
-	
-
 	@ readDIR
 	ldr	r3, =DIR
 	ldr	r6, =#39
